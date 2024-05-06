@@ -1,0 +1,172 @@
+{
+  "files.eol": "\r\n",
+  "editor.formatOnSave": true,
+  "editor.stickyScroll.enabled": true,
+  // CodeRunner
+  "code-runner.executorMap": {
+    "javascript": "node",
+    "php": "C:\\php\\php.exe",
+    "python": "python",
+    "perl": "perl",
+    "ruby": "C:\\Ruby23-x64\\bin\\ruby.exe",
+    "go": "go run",
+    "html": "\"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe\"",
+    "java": "cd $dir && javac $fileName && java $fileNameWithoutExt",
+    "c": "cd $dir && gcc $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt"
+  },
+  // Configurações da fonte FiraCode
+  "editor.fontFamily": "Consolas, 'Courier New', monospace",
+  "editor.fontLigatures": true,
+  "editor.fontSize": 14,
+  "editor.lineHeight": 24,
+  "editor.semanticHighlighting.enabled": false,
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.startupEditor": "newUntitledFile",
+  "workbench.editor.labelFormat": "short",
+  "workbench.productIconTheme": "fluent-icons",
+  "workbench.tree.indent": 14,
+  // Configurações do Editor
+  "editor.renderLineHighlight": "gutter",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.tabSize": 2,
+  "editor.rulers": [111, 150],
+  "editor.suggestSelection": "first",
+  // Configurações do Explorer
+  "explorer.confirmDelete": false,
+  // Configurações do Terminal
+  "terminal.integrated.fontFamily": "Consolas, 'Courier New', monospace",
+  "terminal.integrated.fontSize": 13,
+  "terminal.integrated.letterSpacing": 1,
+  "terminal.integrated.showExitAlert": false,
+  // Configurações de files
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
+  },
+  "files.associations": {
+    ".sequelizerc": "javascript",
+    ".stylelintrc": "json",
+    ".prettierrc": "json",
+    "*.tsx": "typescriptreact"
+  },
+  // Configurações do Material Icon Theme
+  "material-icon-theme.folders.associations": {
+    "infra": "app",
+    "entities": "class",
+    "domain": "class",
+    "schemas": "class",
+    "typeorm": "database",
+    "repositories": "mappings",
+    "http": "container",
+    "migrations": "tools",
+    "modules": "components",
+    "implementations": "core",
+    "dtos": "typescript",
+    "fakes": "mock",
+    "websockets": "pipe",
+    "protos": "pipe",
+    "grpc": "pipe",
+    "providers": "include",
+    "subscribers": "messages",
+    "useCases": "controller",
+    "kafka": "scripts",
+    "mappers": "meta",
+    "_shared": "shared",
+    "eslint-config": "tools",
+    "kube": "kubernetes",
+    "store": "app",
+    "reducers": "class",
+    "sockets": "scripts",
+    "in-memory": "database"
+  },
+  "material-icon-theme.folders.color": "#ef5350",
+  "material-icon-theme.opacity": 0.5,
+  "material-icon-theme.files.associations": {
+    "ormconfig.json": "database",
+    "tsconfig.json": "tune",
+    "*.proto": "3d",
+    "*.webpack.js": "webpack"
+  },
+  // Configurações do Tabnine
+  "tabnine.experimentalAutoImports": true,
+  // Configurações do Git
+  "git.suggestSmartCommit": false,
+  "git.autofetch": true,
+  // Configurações do Javascript
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "javascript.suggest.autoImports": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  // Configurações do Emmet
+  "emmet.syntaxProfiles": {
+    "javascript": "jsx"
+  },
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
+  },
+  // Configurações do React
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "never"
+    }
+  },
+  // Configurações do HTML
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  // Configurações do Typescript
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.suggest.autoImports": true,
+  "typescript.tsserver.log": "off",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "explorer.confirmDragAndDrop": false,
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.occurrencesHighlight": "off",
+  "editor.selectionHighlight": false,
+  "editor.inlineSuggest.enabled": true,
+  "workbench.editorAssociations": {
+    "*.pdf": "default"
+  },
+  "remote.SSH.remotePlatform": {
+    "18.221.97.55": "linux"
+  },
+  "[python]": {
+    "editor.formatOnType": true
+  },
+  "glassit.alpha": 220,
+  "workbench.colorTheme": "Default Dark+",
+  "debug.javascript.autoAttachFilter": "onlyWithFlag",
+  "window.zoomLevel": -1,
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
+}
