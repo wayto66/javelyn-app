@@ -120,6 +120,7 @@ export const ProductSelectionBox = ({
       query products {
         products(page: 1, pageSize: 999, filters: {
           includeInactive: false
+          companyId: ${session?.user.companyId}
         }) {
           objects {
           id
