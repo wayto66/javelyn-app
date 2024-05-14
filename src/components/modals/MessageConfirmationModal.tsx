@@ -1,5 +1,5 @@
 import { env } from "process";
-import { MouseEvent, useContext, useState } from "react";
+import { MouseEvent, useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import fetchMultiform from "~/helpers/fetchMultiform";
 import { reactContext } from "~/pages/_app";
@@ -25,7 +25,7 @@ export const MessageConfirmationModal = ({
 
   return (
     <div
-      className="fixed inset-0 flex hidden h-screen w-screen flex-col items-center justify-center overflow-auto bg-black/40 backdrop-blur-[1px]"
+      className="fixed inset-0 z-[999] flex  h-screen w-screen flex-col items-center justify-center overflow-auto bg-black/40 backdrop-blur-[1px]"
       id="message-confirm-modal-container"
       onClick={handleCloseModal}
     >

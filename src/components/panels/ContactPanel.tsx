@@ -124,19 +124,29 @@ const ContactPanel = () => {
     const response = await fetchData({
       ctx,
       mutation: `
-      mutation {
-      sendMessage (sendMessageInput:{
-      userId: ${session?.user.id},
-      message: ${message},
-      leadIds: [${leads}],
-      file: ${javelynThrowImage},
-      companyId: ${session?.user.companyId}, 
-      phoneNumbers: [${phoneNumbers}]   
+    mutation UploadMessage($userId: Int!, $message: String!, $leadIds: [Int], $file: CustomScalar, $companyId: Int!, $phoneNumbers: [String]) {
+      sendMessage(sendMessageInput: {
+        userId: $userId,
+        message: $message,
+        leadIds: $leadIds,
+        file: $file,
+        companyId: $companyId,
+        phoneNumbers: $phoneNumbers
       }) {
-      succeeded
+        succeeded
       }
-      }
-      `,
+    }
+  `,
+      variables: {
+        userId: session?.user.id,
+        message: message.replace(/(?:\r\n|\r|\n)/g, "\\n"),
+        leadIds: leads,
+        companyId: session?.user.companyId,
+        phoneNumbers: phoneNumbers
+          ? phoneNumbers.map((phone) => `"${phone}"`)
+          : [],
+        file: javelynThrowImage ? await javelynThrowImage.arrayBuffer() : null,
+      },
     });
 
     if (response?.data.sendMessage.succeeded) {
@@ -332,7 +342,7 @@ const ContactPanel = () => {
             }}
           />
 
-          <div className="grid grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 gap-12">
             <textarea
               className="col-span-2 rounded-md border p-2"
               placeholder="Insira a mensagem à ser enviada."
@@ -340,7 +350,7 @@ const ContactPanel = () => {
               value={message}
             />
 
-            <div className="flex w-full flex-row items-center gap-6 rounded-md border border-[mediumslateblue] pl-2 ">
+            {/* <div className="flex w-full flex-row items-center gap-6 rounded-md border border-[mediumslateblue] pl-2 ">
               <div className="text-sm font-bold text-slate-500">Imagem: </div>
               <input
                 type="file"
@@ -355,7 +365,7 @@ const ContactPanel = () => {
                   );
                 }}
               />
-            </div>
+            </div> */}
           </div>
           {connectionStatus === EConnectionStatus.READY ? (
             <PurpleButton>Enviar</PurpleButton>

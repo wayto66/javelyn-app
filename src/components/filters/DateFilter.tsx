@@ -41,8 +41,8 @@ export const DateFilter = ({ setValue, filters }: TDateFilterParams) => {
     resetField,
   } = useForm<DateFilterForm>({
     defaultValues: {
-      dateFrom: filters.createdAt?.gt?.split("T")[0],
-      dateTo: filters.createdAt?.lt?.split("T")[0],
+      dateFrom: filters.createdAt?.gt?.split("T")[0] ?? undefined,
+      dateTo: filters.createdAt?.lt?.split("T")[0] ?? undefined,
     },
   });
 
@@ -71,8 +71,8 @@ export const DateFilter = ({ setValue, filters }: TDateFilterParams) => {
     if (!dateFrom && !dateTo) return;
     resetField("day");
     resetField("monthYear");
-    setValue("createdAt.gt", getValues("dateFrom"));
-    setValue("createdAt.lt", getValues("dateTo"));
+    setValue("createdAt.gt", getValues("dateFrom") + "T00:00:00.000Z");
+    setValue("createdAt.lt", getValues("dateTo") + "T00:00:00.000Z");
   }, [watch("dateFrom"), watch("dateTo")]);
 
   useEffect(() => {
