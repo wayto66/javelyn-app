@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { UseFormSetValue, useForm } from "react-hook-form";
 
 import { AppFilterInput } from "~/types/AppFiltersInput";
@@ -46,16 +46,18 @@ export const DateFilter = ({ setValue, filters }: TDateFilterParams) => {
     },
   });
 
-  const monthOptions = () => {
+  const monthOptions = useMemo(() => {
     const currentMonth = today.getMonth();
     const options = [];
 
     for (let i = 0; i < 13; i++) {
       const date = new Date();
+      date.setDate(1);
       date.setMonth(currentMonth - i);
       const month = date.getMonth();
       const monthName = indexMonthNameMap.get(month);
       const year = date.getFullYear();
+
       options.push(
         <option key={`month-${month}-${year}`} value={`${month}-${year}`}>
           {monthName} - {year}
@@ -64,7 +66,7 @@ export const DateFilter = ({ setValue, filters }: TDateFilterParams) => {
     }
 
     return options;
-  };
+  }, []);
 
   useEffect(() => {
     const { dateFrom, dateTo } = getValues();
@@ -185,7 +187,7 @@ export const DateFilter = ({ setValue, filters }: TDateFilterParams) => {
             {...register("monthYear")}
           >
             <option key="empty-month-option"></option>
-            {monthOptions()}
+            {monthOptions}
           </select>
         </div>
         <div className="col-span-2 flex flex-col rounded-md  ">
