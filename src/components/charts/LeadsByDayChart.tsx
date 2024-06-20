@@ -1,5 +1,8 @@
+import dynamic from "next/dynamic";
 import React, { useState, useEffect } from "react";
-import ReactApexChart from "react-apexcharts";
+const ReactApexChart = dynamic(() => import("react-apexcharts"), {
+  ssr: false,
+});
 import { Lead } from "~/types/graphql";
 
 export interface ILeadsByDayChartParams {
@@ -106,6 +109,7 @@ export const LeadsByDayChart = ({
     },
   };
 
+  if (typeof window === "undefined") return <></>;
   return (
     <div className={className}>
       <h3>

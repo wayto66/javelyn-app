@@ -31,7 +31,7 @@ const EditLeadPanel = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const ctx = useContext(reactContext);
-  const quoteFieldsToShow = ctx.data.quoteFieldsToShow;
+  const { quoteFieldsToShow, leadFieldsToShow, ticketFieldsToShow } = ctx.data;
 
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [selectedTagId, setSelectedTagId] = useState<string>();
@@ -293,7 +293,11 @@ const EditLeadPanel = () => {
     return tickets?.map((ticket) => {
       if (ticket)
         return (
-          <TicketTableLine ticket={ticket} handleEdit={handleTicketEdit} />
+          <TicketTableLine
+            ticket={ticket}
+            handleEdit={handleTicketEdit}
+            fieldsToShow={ticketFieldsToShow}
+          />
         );
     });
   }, [leadInfo?.tickets]);

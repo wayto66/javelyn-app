@@ -1,7 +1,9 @@
+import dynamic from "next/dynamic";
 import React from "react";
-import ReactApexChart from "react-apexcharts";
 import { Lead } from "~/types/graphql";
-
+const ReactApexChart = dynamic(() => import("react-apexcharts"), {
+  ssr: false,
+});
 interface IParams {
   leads: Lead[];
 }
@@ -53,7 +55,7 @@ const LeadsByTagChart = ({ leads }: IParams) => {
       },
     },
   };
-
+  if (typeof window === "undefined") return <></>;
   return (
     <div>
       <h3>Contagem de Leads por Tag</h3>
