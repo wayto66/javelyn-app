@@ -1,8 +1,16 @@
-import { IconEdit, IconTrash, IconRestore } from "@tabler/icons-react";
-import { useMemo } from "react";
+import {
+  IconEdit,
+  IconTrash,
+  IconRestore,
+  IconQuestionMark,
+  IconX,
+  IconCheck,
+} from "@tabler/icons-react";
+import { useContext, useMemo } from "react";
 import { getOptimalTextColor } from "~/helpers/getOptimalTextColor";
 import { triStateDisplay } from "~/helpers/triStateDisplay";
-import { Lead, Tag } from "~/types/graphql";
+import { reactContext } from "~/pages/_app";
+import { AtributeType, AtributeValueType, Lead, Tag } from "~/types/graphql";
 
 export type TLeadTableLine = {
   lead: Lead;
@@ -19,6 +27,10 @@ export const LeadTableLine = ({
   handleRestore,
   fieldsToShow,
 }: TLeadTableLine) => {
+  const ctx = useContext(reactContext);
+  const attributes = ctx.data.attributes?.filter((attr) =>
+    attr.types.includes(AtributeType.LEAD)
+  );
   const editLead = () => {
     if (!handleEdit) return;
     handleEdit(lead);
@@ -98,11 +110,41 @@ export const LeadTableLine = ({
 
       {Object.entries(customFields)
         .filter(([key, value]) => value !== false)
-        .map(([key, value]) => (
-          <td className="px-2" key={`lead-line-attr-${key}`}>
-            {lead.customFields ? lead.customFields[key] : ""}
-          </td>
-        ))}
+        .map(([key, value]) => {
+          if (!lead.customFields)
+            return <td className="px-2" key={`lead-line-attr-${key}`}></td>;
+
+          const attribute = attributes?.find((attr) => attr.name === key);
+          if (!attribute)
+            return (
+              <td className="px-2" key={`lead-line-attr-${key}`}>
+                {lead.customFields ? lead.customFields[key] : ""}
+              </td>
+            );
+
+          const valueType = attribute.valueType;
+          if (valueType === AtributeValueType.BOOLEAN) {
+            let display = <></>;
+            const value = lead.customFields[key];
+            if (value === "0")
+              display = <IconX className="w-full bg-red-400 text-white" />;
+            if (value === "2")
+              display = (
+                <IconCheck className="w-full bg-emerald-400 text-white" />
+              );
+            return (
+              <td className="" key={`lead-line-${lead.id}-attr-${key}`}>
+                {display}
+              </td>
+            );
+          }
+
+          return (
+            <td className="px-2" key={`lead-line-attr-${key}`}>
+              {lead.customFields ? lead.customFields[key] : ""}
+            </td>
+          );
+        })}
 
       <td className="my-auto flex h-full flex-row items-center gap-2 px-2 font-normal text-gray-500">
         <IconEdit

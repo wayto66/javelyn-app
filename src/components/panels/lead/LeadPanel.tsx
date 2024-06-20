@@ -106,7 +106,7 @@ const LeadPanel = () => {
           customFilters: {${jsonToGraphQLString(customFilters)}}
         }) {
           objects {
-          id name phone CPF isActive customFields
+          id name phone CPF isActive customFields mail
           createdAt
           tags {
             id
