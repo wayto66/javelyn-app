@@ -32,6 +32,9 @@ export type TContextData = {
   currentTaskCategory: TaskCategory | undefined;
   taskTargetDate: Date;
   isLoading: boolean;
+  leadFieldsToShow: Record<string, boolean | Record<string, boolean>>;
+  quoteFieldsToShow: Record<string, boolean | Record<string, boolean>>;
+  ticketFieldsToShow: Record<string, boolean | Record<string, boolean>>;
 
   showClientEditBox: boolean;
   showEvaluationEditBox: boolean;

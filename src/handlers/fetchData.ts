@@ -37,11 +37,23 @@ export const fetchData = async ({
         query: gql(query),
         variables,
         fetchPolicy: useCache ? "cache-first" : "network-only",
+        context: {
+          graphqlContext: {
+            query,
+            variables,
+          },
+        },
       });
     } else if (mutation) {
       result = await apolloClient.mutate({
         mutation: gql(mutation),
         variables,
+        context: {
+          graphqlContext: {
+            mutation,
+            variables,
+          },
+        },
       });
     }
     ctx?.setData((prev) => {
@@ -57,7 +69,7 @@ export const fetchData = async ({
     if (!result) return null;
     return result;
   } catch (error: any) {
-    console.error(error);
+    console.error(JSON.parse(JSON.stringify(error)));
     ctx?.setData((prev) => {
       return {
         ...prev,

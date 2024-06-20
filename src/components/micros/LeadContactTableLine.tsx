@@ -35,7 +35,6 @@ export const LeadContactTableLine = ({
       key={`lead-tr-${lead.id}-${Math.random()}`}
     >
       <td className="px-2 text-sm">{lead.name}</td>
-      <td className="px-2 ">{lead.CPF}</td>
       <td className="px-2">{lead.phone}</td>
 
       <td className=" px-2">

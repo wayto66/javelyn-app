@@ -1,35 +1,44 @@
-import { FormEvent, MouseEvent, useContext } from "react";
+import { FormEvent, MouseEvent, useContext, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { sheetToJson } from "~/helpers/sheetToJson";
 import { ShineButton } from "../micros/ShineButton";
 import PurpleButton from "../micros/PurpleButton";
-import { CreateLeadInput } from "~/types/graphql";
+import { AtributeType, CreateLeadInput } from "~/types/graphql";
 import { toast } from "react-toastify";
 import { useSession } from "next-auth/react";
 import { fetchData } from "~/handlers/fetchData";
 import { reactContext } from "~/pages/_app";
 import { arrayToGraphQLString } from "~/helpers/arrayToGraphQLString";
+import { jsonToGraphQLString } from "~/helpers/jsonToGraphQLString";
 
 type SheetImportModalParams = {
   closeSheetImportModal: () => void;
-  isSheetImportModalVisible: boolean;
   reloadLeads: () => Promise<void>;
 };
 
+export interface ILeadsImportFormParams {
+  CPF: string;
+  name: string;
+  mail: string;
+  phone: string;
+  files: FileList;
+  attributes: Record<string, any>;
+}
+
 export const SheetImportModal = ({
   closeSheetImportModal,
-  isSheetImportModalVisible,
   reloadLeads,
 }: SheetImportModalParams) => {
   const { data: session } = useSession();
   const ctx = useContext(reactContext);
-  const { register, getValues } = useForm({
+  const { register, getValues } = useForm<ILeadsImportFormParams>({
     defaultValues: {
       CPF: "CPF",
       name: "NOME",
       mail: "EMAIL",
       phone: "TELEFONE",
-      file: undefined,
+      files: undefined,
+      attributes: {},
     },
   });
   const handleSheetImportClick = (e: MouseEvent) => {
@@ -39,7 +48,7 @@ export const SheetImportModal = ({
 
   const handleRead = async (e: FormEvent) => {
     e.preventDefault();
-    const files = getValues("file");
+    const files = getValues("files");
     if (!files) return;
     const file = files[0];
     if (!file) return;
@@ -48,9 +57,10 @@ export const SheetImportModal = ({
       toast.error("Houve um erro ao ler a planilha.");
       return;
     }
-    const { name, CPF, mail, phone } = getValues();
+    const { name, CPF, mail, phone, attributes } = getValues();
     const leadInputs: CreateLeadInput[] = [];
     for (const leadInput of data) {
+      console.log({ leadInput });
       if (!leadInput[name]) continue;
       const newLeadInput: any = {
         companyId: session?.user.companyId,
@@ -60,6 +70,14 @@ export const SheetImportModal = ({
       if (leadInput[CPF]) newLeadInput.CPF = leadInput[CPF];
       if (leadInput[mail]) newLeadInput.mail = leadInput[mail];
       if (leadInput[phone]) newLeadInput.phone = leadInput[phone];
+      for (const [attributeCorrectName, attributeFormName] of Object.entries(
+        attributes
+      )) {
+        if (!newLeadInput.customFields) newLeadInput.customFields = {};
+        if (leadInput[attributeFormName])
+          newLeadInput.customFields[attributeCorrectName] =
+            leadInput[attributeFormName];
+      }
 
       leadInputs.push(newLeadInput);
     }
@@ -74,6 +92,11 @@ export const SheetImportModal = ({
           ${phone ? `phone: "${phone}",` : ""}
           companyId: ${leadInput.companyId}
           userId: ${leadInput.userId}
+          customFields: {${
+            leadInput.customFields
+              ? jsonToGraphQLString(leadInput.customFields)
+              : ""
+          }}
         }`;
       })
       .join(",");
@@ -102,7 +125,14 @@ export const SheetImportModal = ({
     closeSheetImportModal();
   };
 
-  if (!isSheetImportModalVisible) return <></>;
+  const attributes = useMemo(() => {
+    const attributes = ctx.data.attributes;
+    if (!attributes) return [];
+    return attributes.filter(
+      (attr) => attr.isActive && attr.types.includes(AtributeType.LEAD)
+    );
+  }, [ctx]);
+
   return (
     <div
       className="fixed inset-0 z-[9999] flex  h-screen w-screen items-center justify-center bg-black/50 backdrop-blur"
@@ -117,7 +147,7 @@ export const SheetImportModal = ({
         <input
           className="mt-[-15px] flex h-full items-center justify-center rounded-md bg-jpurple px-5 py-1 text-white transition hover:bg-jpurple/80"
           type="file"
-          {...register("file")}
+          {...register("files")}
           accept=".xlsx, .xls, .csv, .ods"
         />
         <div className="mt-8">
@@ -127,31 +157,58 @@ export const SheetImportModal = ({
           Ignore os campos que não forem ser utilizados
         </div>
 
-        <div className="my-12 grid grid-cols-2 gap-3">
-          <div className="ml-auto">Nome:</div>
-          <input
-            type="text"
-            className="rounded-md border px-2"
-            {...register("name")}
-          />
-          <div className="ml-auto">CPF:</div>
-          <input
-            type="text"
-            className="rounded-md border px-2"
-            {...register("CPF")}
-          />
-          <div className="ml-auto">Telefone:</div>
-          <input
-            type="text"
-            className="rounded-md border px-2"
-            {...register("phone")}
-          />
-          <div className="ml-auto">E-mail:</div>
-          <input
-            type="text"
-            className="rounded-md border px-2"
-            {...register("mail")}
-          />
+        <div className="my-12 flex w-full flex-col gap-3">
+          <div className="grid grid-cols-2">
+            <div className="text-xs font-semibold text-gray-700">
+              Nome do campo no sistema
+            </div>
+            <div className="text-xs font-semibold text-gray-700">
+              Nome da coluna na planilha
+            </div>
+          </div>
+          <div className="flex flex-row gap-3 ">
+            <div className="font-semibold text-gray-700">Nome:</div>
+            <input
+              type="text"
+              className="ml-auto basis-[50%] rounded-md border px-2"
+              {...register("name")}
+            />
+          </div>
+          <div className="flex flex-row gap-3 ">
+            <div className="font-semibold text-gray-700">CPF:</div>
+            <input
+              type="text"
+              className="ml-auto basis-[50%] rounded-md border px-2"
+              {...register("CPF")}
+            />
+          </div>
+          <div className="flex flex-row gap-3 ">
+            <div className="font-semibold text-gray-700">Telefone:</div>
+            <input
+              type="text"
+              className="ml-auto basis-[50%] rounded-md border px-2"
+              {...register("phone")}
+            />
+          </div>
+          <div className="flex flex-row gap-3 ">
+            <div className="font-semibold text-gray-700">E-mail:</div>
+            <input
+              type="text"
+              className="ml-auto basis-[50%] rounded-md border px-2"
+              {...register("mail")}
+            />
+          </div>
+          {attributes.map((attr) => (
+            <div className="flex flex-row gap-3 " key={`attr-${attr.name}`}>
+              <div className="font-semibold text-gray-700">{attr.name}:</div>
+              <input
+                type="text"
+                className="ml-auto basis-[50%] rounded-md border px-2"
+                {...register(`attributes.${attr.name}`)}
+                defaultValue={attr.name}
+              />
+            </div>
+          ))}
         </div>
 
         <PurpleButton>Importar</PurpleButton>

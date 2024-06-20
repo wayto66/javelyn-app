@@ -4,6 +4,8 @@ const localeMap = new Map<string, string>([
   ["STRING", "TEXTO"],
   ["PRODUCT", "PRODUTO"],
   ["QUOTE", "ORÇAMENTO"],
+  ["PHONE", "Telefone"],
+  ["MAIL", "Email"],
 ]);
 
 export const Locale = (text: string): string => {

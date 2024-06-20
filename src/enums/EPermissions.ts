@@ -1,0 +1,6 @@
+export enum EPermissions {
+  THROW = "THROW",
+  TASK_CATEGORIES = "TASK_CATEGORIES",
+  SEE_ALL_LEADS = "SEE_ALL_LEADS",
+  SEE_ALL_TASKS = "SEE_ALL_TASKS",
+}

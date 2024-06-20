@@ -1,3 +1,7 @@
+import { bg, $, w, x } from "@fullcalendar/core/internal-common";
+import { h } from "@fullcalendar/core/preact";
+import { text } from "stream/consumers";
+
 type TShineButtonParams = {
   children: (JSX.Element | string) | (JSX.Element | string)[];
   id?: string;
@@ -9,6 +13,7 @@ type TShineButtonParams = {
   activeTextColor?: string;
   onClick?: (data?: any) => any;
   active?: boolean;
+  disabled?: boolean;
 };
 
 export const ShineButton = ({
@@ -22,8 +27,11 @@ export const ShineButton = ({
   shineColor,
   onClick,
   active,
+  disabled,
 }: TShineButtonParams) => {
-  const defaultClassName = `hover:scale-[1.02]  transition group relative overflow-hidden rounded-md bg-${
+  const defaultClassName = `${
+    disabled ? "opacity-80" : ""
+  }  transition group relative hover:opacity-80 overflow-visible rounded-md bg-${
     active ? activeButtonColor ?? "jpurple" : buttonColor ?? "secondary"
   } px-6 py-2 font-semibold text-${
     active ? activeTextColor ?? "white" : textColor ?? "white"
@@ -34,13 +42,14 @@ export const ShineButton = ({
       id={id}
       key={(id ?? "button-") + Math.random()}
       className={defaultClassName + className}
-      onClick={(e) => (onClick ? onClick(e) : {})}
+      onClick={onClick}
+      disabled={disabled}
     >
       {children}
       <div
-        className={`absolute left-[-75px] top-0 h-full w-[50px] skew-x-12 bg-${
+        className={`absolute left-[-25px] top-0 h-full min-h-[50px] w-[50px] skew-x-12 bg-${
           shineColor ?? "white"
-        }/60 transition duration-[250ms] group-hover:translate-x-[700%]`}
+        }/60 z-[5] transition-all duration-[250ms] group-hover:translate-x-[700%]`}
       ></div>
     </button>
   );

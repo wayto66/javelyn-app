@@ -5,6 +5,7 @@ import { reactContext } from "~/pages/_app";
 import PurpleButton from "../../micros/PurpleButton";
 import {
   IconDownload,
+  IconForms,
   IconLoader2,
   IconPlus,
   IconSearch,
@@ -23,11 +24,13 @@ import { handlePanelChange } from "~/helpers/handlePanelChange";
 import { stringToBoolean } from "~/helpers/stringToBoolean";
 import { FiltersUnitsDisplay } from "~/components/minis/FiltersUnitsDisplay";
 import { ExportTableButton } from "~/components/micros/ExportTableButton";
+import { QuoteFieldChooseModal } from "~/components/modals/QuoteFieldChooseModal";
 
 const TicketPanel = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const ctx = useContext(reactContext);
+  const fieldsToShow = ctx.data.quoteFieldsToShow;
 
   const [pageSize, setPageSize] = useState(25);
   const [tickets, setTickets] = useState<Ticket[]>();
@@ -43,6 +46,8 @@ const TicketPanel = () => {
       ? JSON.parse(router.query.products as string)
       : [],
   });
+  const [isFieldChooseModalVisible, setFieldChooseModalVisible] =
+    useState(false);
 
   const { register, getValues } = useForm();
 
@@ -57,8 +62,6 @@ const TicketPanel = () => {
       createdAt,
       products,
     } = filters;
-
-    console.log({ products });
 
     const productIds = products ? products.map((product) => product.id) : "";
 
@@ -212,6 +215,9 @@ const TicketPanel = () => {
     } else toast.error("Houve um erro ao reativar o ticket.");
   };
 
+  const openFieldChooseModal = () => setFieldChooseModalVisible(true);
+  const closeFieldChooseModal = () => setFieldChooseModalVisible(false);
+
   const ticketDisplay = useMemo(() => {
     if (!tickets) return;
     const display: JSX.Element[] = [];
@@ -222,13 +228,14 @@ const TicketPanel = () => {
           handleEdit={handleTicketEdit}
           handleRemove={handleTicketRemove}
           handleRestore={handleTicketRestore}
+          fieldsToShow={fieldsToShow}
         ></TicketTableLine>
       );
       display.push(ticketLine);
     }
 
     return display;
-  }, [tickets]);
+  }, [tickets, fieldsToShow]);
 
   return (
     <>
@@ -239,6 +246,13 @@ const TicketPanel = () => {
         filters={filters}
         extraFilters={[FilterNames.PRODUCTS, FilterNames.CREATED_AT]}
       />
+      {isFieldChooseModalVisible && (
+        <QuoteFieldChooseModal
+          closeFieldChooseModal={closeFieldChooseModal}
+          reloadQuotes={getTickets}
+        />
+      )}
+
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 rounded-md">
         <div className="flex flex-row justify-between">
           <div className="text-4xl font-extrabold text-jpurple">Tickets</div>
@@ -276,6 +290,15 @@ const TicketPanel = () => {
         </div>
         <div className="mt-2 flex flex-row justify-between gap-6">
           <FiltersUnitsDisplay filters={filters} setFilters={setFilters} />
+        </div>
+        <div className="flex flex-row items-center justify-between gap-6">
+          <button
+            className=" mt-3 flex h-full flex-row items-center gap-2 rounded-md border-b bg-jpurple px-5 py-2 text-sm font-bold text-white shadow-xl transition hover:border-jpurple hover:opacity-80"
+            onClick={openFieldChooseModal}
+          >
+            <IconForms />
+            Campos para Exibir
+          </button>
           <ExportTableButton />
         </div>
         <PageSelectDisplay
@@ -286,27 +309,50 @@ const TicketPanel = () => {
           totalCount={ticketTotalCount ?? 0}
         />
         <table
-          className=" w-full table-auto border-separate border-spacing-y-2 overflow-scroll rounded-md  border p-2 "
+          className=" mt-3 w-full table-auto border-separate border-spacing-2 overflow-scroll  rounded-md "
           id="ticket-table"
         >
           <thead className="overflow-hidden rounded-t-md  bg-gray-300 text-gray-600">
             <tr className="rounded-md">
-              <th className="cursor-pointer rounded-tl-md from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
-                Data
-              </th>
-              <th className="cursor-pointer from-[MediumPurple]  to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
-                Lead
-              </th>
-              <th className="cursor-pointer from-[MediumPurple]  to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
-                Valor
-              </th>
-              <th className="cursor-pointer from-[MediumPurple]  to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
-                Usuário
-              </th>
-
+              {fieldsToShow.date && (
+                <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  Data
+                </th>
+              )}
               <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
-                Tags
+                Nome
               </th>
+              {fieldsToShow.CPF && (
+                <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  CPF
+                </th>
+              )}
+              {fieldsToShow.phone && (
+                <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  Telefone
+                </th>
+              )}
+              {fieldsToShow.mail && (
+                <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  Email
+                </th>
+              )}
+              {fieldsToShow.value && (
+                <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  Valor
+                </th>
+              )}
+              {fieldsToShow.user && (
+                <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  Usuário
+                </th>
+              )}
+
+              {fieldsToShow.tags && (
+                <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  Tags
+                </th>
+              )}
               <th className="cursor-pointer rounded-tr-md from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
                 Ações
               </th>

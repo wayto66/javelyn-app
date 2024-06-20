@@ -11,7 +11,8 @@ import { MessageConfirmationModal } from "../modals/MessageConfirmationModal";
 import { Lead } from "~/types/graphql";
 import { InputSanitizer } from "~/helpers/InputSanitizer";
 import { LeadContactTableLine } from "../micros/LeadContactTableLine";
-import { IconTool } from "@tabler/icons-react";
+import { IconPlus, IconTool } from "@tabler/icons-react";
+import axios from "axios";
 
 const ContactPanel = () => {
   const { data: session } = useSession();
@@ -61,28 +62,6 @@ const ContactPanel = () => {
     }
   };
 
-  const handleShutdown = async () => {
-    const response = await fetchData({
-      ctx,
-      mutation: `
-      mutation {
-      shutdownWhatsapp (shutdownWhatsappInput:{
-      companyId: 1
-      userId: 1
-      }) {
-      succeeded
-      }
-      }
-      `,
-    });
-    const succeeded = response?.data?.shutdownWhatsapp?.succeeded;
-    if (succeeded) {
-      toast.success("Todas as conexões foram encerradas.");
-    } else {
-      toast.error("Houve um erro no servidor.");
-    }
-  };
-
   const showMessageConfirmationModal = () => setConfirmationVisibility(true);
   const closeMessageConfirmationModal = () => setConfirmationVisibility(false);
 
@@ -119,37 +98,45 @@ const ContactPanel = () => {
   };
 
   const handleMessageSubmit = async (event: any) => {
-    const leads = ctx.data.currentLeads?.map((lead) => lead.id) ?? [];
+    if (!session) return;
+    const leads =
+      ctx.data.currentLeads?.map((lead) => {
+        return {
+          id: lead.id,
+          name: lead.name,
+          phone: lead.phone,
+        };
+      }) ?? [];
 
-    const response = await fetchData({
-      ctx,
-      mutation: `
-    mutation UploadMessage($userId: Int!, $message: String!, $leadIds: [Int], $file: CustomScalar, $companyId: Int!, $phoneNumbers: [String]) {
-      sendMessage(sendMessageInput: {
-        userId: $userId,
-        message: $message,
-        leadIds: $leadIds,
-        file: $file,
-        companyId: $companyId,
-        phoneNumbers: $phoneNumbers
-      }) {
-        succeeded
-      }
-    }
-  `,
-      variables: {
-        userId: session?.user.id,
-        message: message.replace(/(?:\r\n|\r|\n)/g, "\\n"),
-        leadIds: leads,
-        companyId: session?.user.companyId,
-        phoneNumbers: phoneNumbers
-          ? phoneNumbers.map((phone) => `"${phone}"`)
-          : [],
-        file: javelynThrowImage ? await javelynThrowImage.arrayBuffer() : null,
-      },
+    ctx.setData((prev) => {
+      return {
+        ...prev,
+        isLoading: true,
+      };
     });
 
-    if (response?.data.sendMessage.succeeded) {
+    const sendMessageRequest = await axios.post(
+      "https://mulo5xpjs1.execute-api.sa-east-1.amazonaws.com/request",
+      {
+        userId: session.user.id,
+        endpoint: "/send-message",
+        requestData: {
+          userId: session.user.id,
+          message,
+          leads,
+        },
+      }
+    );
+    ctx.setData((prev) => {
+      return {
+        ...prev,
+        isLoading: false,
+      };
+    });
+
+    const response = sendMessageRequest.data;
+
+    if (response?.data?.succeeded) {
       toast.success("Enviados com sucesso!");
     } else {
       toast.error("Houve um erro ao enviar as mensagens.");
@@ -217,42 +204,14 @@ const ContactPanel = () => {
           previewMessage={previewMessage}
         />
       )}
-      <div className="bg- mx-auto flex min-h-screen w-full max-w-[1200px] flex-col items-center justify-center">
-        <div className="grid w-full grid-cols-2 justify-between rounded-md bg-[lavender]">
+      <div className=" mx-auto flex min-h-screen w-full max-w-[1200px] flex-col items-center justify-center">
+        <div className="flex w-full justify-between rounded-md ">
           {" "}
-          <div className="border ">
+          <div className="grow ">
             <ConectionHub
               connectionStatus={connectionStatus}
               setConnectionStatus={setConnectionStatus}
             />
-          </div>
-          <div className="flex h-full flex-col items-center justify-center">
-            {" "}
-            <div className="grid w-full grid-cols-2 items-start justify-items-center  gap-x-4 p-3">
-              <div className="flex flex-col items-center rounded-md border border-white">
-                <button
-                  className="h-max w-full cursor-pointer rounded-md bg-[MediumSlateBlue] px-2 py-1 font-extrabold uppercase text-white transition hover:bg-[MediumViolet] active:scale-[0.98]"
-                  onClick={handleShutdown}
-                >
-                  shutdown
-                </button>
-                <div className="mx-auto mb-6 mt-2 max-w-[90%] rounded-md border p-2 text-xs font-normal  text-slate-500">
-                  Desconecta o whatsapp de todos usuários de sua empresa. <br />
-                  <br />
-                </div>
-              </div>
-              <div className="flex h-full flex-col items-center rounded-md border border-white">
-                <button
-                  className="h-max w-full cursor-pointer rounded-md bg-[MediumSlateBlue] px-2 py-1 font-extrabold uppercase text-white transition hover:bg-[MediumViolet] active:scale-[0.98]"
-                  onClick={handleDisconnect}
-                >
-                  Desconectar
-                </button>
-                <div className="mx-auto mb-6 mt-2 max-w-[90%] rounded-md border p-2 text-xs font-normal  text-slate-500">
-                  Desconecta seu whatsapp do sistema JAVELYN.
-                </div>
-              </div>
-            </div>
           </div>
         </div>
         {leadsDisplay.length > 0 ? (
@@ -274,20 +233,20 @@ const ContactPanel = () => {
               }}
             >
               <span className="uppercase text-slate-600">Clientes</span>
-              <span>\/</span>
+              <IconPlus />
             </div>
 
             <div
               className=" w-full overflow-hidden bg-white  font-normal"
               id="contact-client-list"
             >
-              <table className="w-full border">
+              <table className="w-full border-separate border-spacing-2 border">
                 <thead>
                   <tr>
                     <th className="border px-1">Nome</th>
                     <th className="border px-1">Telefone</th>
-                    <th className="border px-1">Arremessos</th>
-                    <th className="border px-1">Último arremesso</th>
+                    <th className="border px-1">Tags</th>
+                    <th className="border px-1">Ações</th>
                   </tr>
                 </thead>
                 <tbody id="contact-client-table-body">{leadsDisplay}</tbody>
@@ -308,19 +267,6 @@ const ContactPanel = () => {
               >
                 <span className="drop-shadow-xl"> Selecionar no Painel</span>
               </button>
-              <button
-                className="rounded-md bg-gradient-to-r from-[MediumPurple] to-[MediumSlateBlue] px-2 py-1 font-bold uppercase text-white transition hover:scale-[1.03] active:scale-[0.96]"
-                onClick={() => {
-                  const phoneInput = document.querySelector("#phone-input");
-                  if (phoneInput) {
-                    phoneInput.classList.contains("hidden")
-                      ? phoneInput.classList.remove("hidden")
-                      : phoneInput.classList.add("hidden");
-                  }
-                }}
-              >
-                Inserir Manualmente
-              </button>
             </div>
           </div>
         )}
@@ -328,20 +274,6 @@ const ContactPanel = () => {
           className="flex w-full flex-col gap-6 rounded-md bg-gradient-to-b from-slate-300 to-[Lavender] p-4 shadow-xl"
           onSubmit={(e) => handleMessageFormVerify(e)}
         >
-          <input
-            type="text"
-            className="hidden rounded-md border p-2"
-            placeholder="Insira o telefone. Para inserir vários, separe os números utilizando vírgula."
-            id="phone-input"
-            onKeyUp={(e) => {
-              const inputPhones = (e.target as HTMLInputElement).value;
-              const newPhoneNumbers = inputPhones
-                .split(",")
-                .map((pn) => InputSanitizer.phone(pn));
-              setPhoneNumbers(newPhoneNumbers);
-            }}
-          />
-
           <div className="grid grid-cols-1 gap-12">
             <textarea
               className="col-span-2 rounded-md border p-2"

@@ -43,6 +43,7 @@ import AttributePanel from "~/components/panels/attribute/AttributePanel";
 import CreateAttributePanel from "~/components/panels/attribute/CreateAttributePanel";
 import EditAttributePanel from "~/components/panels/attribute/EditAttributePanel";
 import EditUserPanel from "~/components/panels/user/EditUserPanel";
+import { DashboardPanel } from "~/components/panels/dashboard/DashboardPanel";
 
 const panelMap = new Map<string, JSX.Element>([
   ["home", <HomePanel />],
@@ -78,6 +79,7 @@ const panelMap = new Map<string, JSX.Element>([
   ["attributes-create", <CreateAttributePanel />],
   ["attributes-edit", <EditAttributePanel />],
   ["settings", <SettingsPanel />],
+  ["dashboard", <DashboardPanel />],
 ]);
 
 const Home: NextPage = () => {
@@ -184,7 +186,7 @@ const Home: NextPage = () => {
         {data?.isLoading ? <LoadingOverlap /> : null}
         <div className="flex w-full flex-col">
           <div className=" flex w-full flex-row items-start gap-5 rounded-md bg-gray-50 md:min-w-[600px] lg:min-w-[800px]">
-            <div className="flex w-full max-w-[100vw] flex-row   rounded-md">
+            <div className="flex w-full max-w-[100vw] flex-col rounded-md   md:flex-row">
               <Sidebar />
 
               <Suspense>
