@@ -38,16 +38,21 @@ import { ExportTableButton } from "~/components/micros/ExportTableButton";
 import { SheetImportModal } from "~/components/modals/SheetImportModal";
 import { jsonToGraphQLString } from "~/helpers/jsonToGraphQLString";
 import { DefaultButton } from "~/components/micros/DefaultButton";
+import { LeadFieldChooseModal } from "~/components/modals/LeadFieldChooseModal";
+import { Locale } from "~/helpers/Locale";
 
 const LeadPanel = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const ctx = useContext(reactContext);
+  const fieldsToShow = ctx.data.leadFieldsToShow;
 
   const [leads, setLeads] = useState<Lead[]>();
   const [leadTotalCount, setLeadTotalCount] = useState<number>(0);
   const [page, setPage] = useState(1);
   const [isSheetImportModalVisible, setSheetImportModalVisible] =
+    useState(false);
+  const [isFieldChooseModalVisible, setFieldChooseModalVisible] =
     useState(false);
   const [filterModalVisibility, setFilterModalVisibility] = useState(false);
   const [fieldsModalVisibility, setFieldsModalVisibility] = useState(false);
@@ -101,12 +106,7 @@ const LeadPanel = () => {
           customFilters: {${jsonToGraphQLString(customFilters)}}
         }) {
           objects {
-          id
-          name
-          phone
-          CPF
-          isActive
-          customFields
+          id name phone CPF isActive customFields
           createdAt
           tags {
             id
@@ -245,6 +245,9 @@ const LeadPanel = () => {
   const openSheetImportModal = () => setSheetImportModalVisible(true);
   const closeSheetImportModal = () => setSheetImportModalVisible(false);
 
+  const openFieldChooseModal = () => setFieldChooseModalVisible(true);
+  const closeFieldChooseModal = () => setFieldChooseModalVisible(false);
+
   const leadDisplay = useMemo(() => {
     if (!leads) return;
     const display: JSX.Element[] = [];
@@ -255,21 +258,30 @@ const LeadPanel = () => {
           handleEdit={handleLeadEdit}
           handleRemove={handleLeadRemove}
           handleRestore={handleLeadRestore}
+          fieldsToShow={fieldsToShow}
         ></LeadTableLine>
       );
       display.push(leadLine);
     }
 
     return display;
-  }, [leads]);
+  }, [leads, fieldsToShow]);
 
   return (
     <>
-      <SheetImportModal
-        closeSheetImportModal={closeSheetImportModal}
-        isSheetImportModalVisible={isSheetImportModalVisible}
-        reloadLeads={getLeads}
-      />
+      {isSheetImportModalVisible && (
+        <SheetImportModal
+          closeSheetImportModal={closeSheetImportModal}
+          reloadLeads={getLeads}
+        />
+      )}
+      {isFieldChooseModalVisible && (
+        <LeadFieldChooseModal
+          closeFieldChooseModal={closeFieldChooseModal}
+          isFieldChooseModalVisible={isFieldChooseModalVisible}
+          reloadLeads={getLeads}
+        />
+      )}
       <FilterModal
         visibility={filterModalVisibility}
         setVisibility={setFilterModalVisibility}
@@ -357,29 +369,38 @@ const LeadPanel = () => {
         <div className="mt-2 flex flex-row justify-between gap-6">
           <FiltersUnitsDisplay filters={filters} setFilters={setFilters} />
         </div>
-        <div className="flex flex-row items-end   gap-4">
+        <div className="flex flex-row-reverse items-center justify-between">
+          <div className="flex flex-row items-end   gap-4">
+            <button
+              className="flex h-full flex-row items-center gap-2 rounded-md border-b px-5 py-2 text-sm font-bold text-jpurple shadow-xl transition hover:border-jpurple hover:opacity-80"
+              onClick={handleThrow}
+            >
+              <IconSend />
+              Arremessar
+            </button>
+            <button
+              className="flex h-full flex-row items-center gap-2 rounded-md border-b px-5 py-2 text-sm font-bold text-jpurple shadow-xl transition hover:border-jpurple hover:opacity-80"
+              onClick={handleCreateTask}
+            >
+              <IconClipboardPlus />
+              Criar Tarefa
+            </button>
+            <button
+              className="ml-auto flex h-full flex-row items-center gap-2 rounded-md border-b px-5 py-2 text-sm font-bold text-jpurple shadow-xl transition hover:border-jpurple hover:opacity-80"
+              onClick={openSheetImportModal}
+            >
+              <IconTableImport />
+              Importar Planilha
+            </button>
+            <ExportTableButton />
+          </div>
           <button
-            className="flex h-full flex-row items-center gap-2 rounded-md border-b px-5 py-2 text-sm font-bold text-jpurple shadow-xl transition hover:border-jpurple hover:opacity-80"
-            onClick={handleThrow}
+            className=" mt-3 flex h-full flex-row items-center gap-2 rounded-md border-b bg-jpurple px-5 py-2 text-sm font-bold text-white shadow-xl transition hover:border-jpurple hover:opacity-80"
+            onClick={openFieldChooseModal}
           >
-            <IconSend />
-            Arremessar
+            <IconForms />
+            Campos para Exibir
           </button>
-          <button
-            className="flex h-full flex-row items-center gap-2 rounded-md border-b px-5 py-2 text-sm font-bold text-jpurple shadow-xl transition hover:border-jpurple hover:opacity-80"
-            onClick={handleCreateTask}
-          >
-            <IconClipboardPlus />
-            Criar Tarefa
-          </button>
-          <button
-            className="ml-auto flex h-full flex-row items-center gap-2 rounded-md border-b px-5 py-2 text-sm font-bold text-jpurple shadow-xl transition hover:border-jpurple hover:opacity-80"
-            onClick={openSheetImportModal}
-          >
-            <IconTableImport />
-            Importar Planilha
-          </button>
-          <ExportTableButton />
         </div>
         <PageSelectDisplay
           page={page}
@@ -389,27 +410,51 @@ const LeadPanel = () => {
           totalCount={leadTotalCount}
         />
         <table
-          className=" w-full table-auto border-separate border-spacing-y-2 overflow-scroll rounded-md  border p-2 "
+          className="mt-3 w-full table-auto border-separate border-spacing-x-2 border-spacing-y-2 overflow-scroll rounded-md "
           id="lead-table"
         >
           <thead className="overflow-hidden rounded-t-md  bg-gray-300 text-gray-600">
             <tr className="rounded-md">
-              <th className="cursor-pointer rounded-tl-md from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
-                Entrada
-              </th>
+              {fieldsToShow.date && (
+                <th className="cursor-pointer rounded-tl-md from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  Entrada
+                </th>
+              )}
               <th className="cursor-pointer from-[MediumPurple]  to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
                 Nome
               </th>
-              <th className="cursor-pointer from-[MediumPurple]  to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
-                CPF
-              </th>
-              <th className="cursor-pointer from-[MediumPurple]  to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
-                Telefone
-              </th>
-
-              <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
-                Tags
-              </th>
+              {fieldsToShow.CPF && (
+                <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  CPF
+                </th>
+              )}
+              {fieldsToShow.phone && (
+                <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  Telefone
+                </th>
+              )}
+              {fieldsToShow.mail && (
+                <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  Email
+                </th>
+              )}
+              {fieldsToShow.tags && (
+                <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  Tags
+                </th>
+              )}
+              {Object.entries(fieldsToShow ?? {}).map(([key, value]) => {
+                if (typeof value !== "boolean")
+                  return Object.entries(value ?? {})
+                    .filter(([key, value]) => value !== false)
+                    .map(([key, value]) => {
+                      return (
+                        <th className="cursor-pointer from-[MediumPurple]  to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                          {key}
+                        </th>
+                      );
+                    });
+              })}
 
               <th className="cursor-pointer rounded-tr-md from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
                 Ações

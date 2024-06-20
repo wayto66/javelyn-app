@@ -25,6 +25,27 @@ const contextDefaultValue: TContextData = {
   currentTaskCategory: undefined,
   taskTargetDate: new Date(),
   isLoading: false,
+  leadFieldsToShow: {
+    name: true,
+    CPF: true,
+    phone: true,
+    tags: true,
+    mail: true,
+    customFields: {},
+    date: true,
+  },
+  quoteFieldsToShow: {
+    name: true,
+    tags: true,
+    customFields: {},
+    date: true,
+  },
+  ticketFieldsToShow: {
+    name: true,
+    tags: true,
+    customFields: {},
+    date: true,
+  },
 
   showClientEditBox: false,
   showEvaluationEditBox: false,

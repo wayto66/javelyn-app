@@ -9,6 +9,7 @@ export type TLeadTableLine = {
   handleEdit?: (lead: Lead) => void;
   handleRemove?: (lead: Lead) => void;
   handleRestore?: (lead: Lead) => void;
+  fieldsToShow: Record<string, boolean | Record<string, boolean>>;
 };
 
 export const LeadTableLine = ({
@@ -16,6 +17,7 @@ export const LeadTableLine = ({
   handleEdit,
   handleRemove,
   handleRestore,
+  fieldsToShow,
 }: TLeadTableLine) => {
   const editLead = () => {
     if (!handleEdit) return;
@@ -58,33 +60,51 @@ export const LeadTableLine = ({
       </button>
     );
   });
+
+  const customFields =
+    typeof fieldsToShow.customFields === "boolean"
+      ? {}
+      : fieldsToShow.customFields ?? {};
   return (
     <tr
       className={`${
-        lead.isActive ? "bg-violet-50" : "bg-red-400"
-      } py-1 transition hover:bg-gray-300`}
+        lead.isActive ? "bg-violet-100" : "bg-red-400"
+      }  py-1 transition hover:bg-gray-300 `}
       key={`lead-tr-${lead.id}-${Math.random()}`}
     >
+      {fieldsToShow.date && (
+        <td
+          className="cursor-pointer px-2 text-sm transition  hover:text-jpurple"
+          onClick={() => editLead()}
+        >
+          {new Date(lead.createdAt).toLocaleString("pt-BR")}
+        </td>
+      )}
       <td
-        className="cursor-pointer px-2 text-sm transition  hover:text-jpurple"
-        onClick={() => editLead()}
-      >
-        {new Date(lead.createdAt).toLocaleString("pt-BR")}
-      </td>
-      <td
-        className="cursor-pointer px-2 text-sm transition  hover:text-jpurple"
+        className="cursor-pointer px-2 text-sm font-semibold transition  hover:text-jpurple"
         onClick={() => editLead()}
       >
         {lead.name}
       </td>
-      <td className="px-2 ">{lead.CPF}</td>
-      <td className="px-2">{lead.phone}</td>
+      {fieldsToShow.CPF && <td className="px-2 ">{lead.CPF}</td>}
+      {fieldsToShow.phone && <td className="px-2">{lead.phone}</td>}
+      {fieldsToShow.mail && <td className="px-2">{lead.mail}</td>}
 
-      <td className=" px-2">
-        <div className="grid grid-cols-4 gap-1">{tagsDisplay}</div>
-      </td>
+      {fieldsToShow.tags && (
+        <td className=" px-2">
+          <div className="grid grid-cols-4 gap-1">{tagsDisplay}</div>
+        </td>
+      )}
 
-      <td className="flex flex-row gap-2 px-2 font-normal text-gray-500">
+      {Object.entries(customFields)
+        .filter(([key, value]) => value !== false)
+        .map(([key, value]) => (
+          <td className="px-2" key={`lead-line-attr-${key}`}>
+            {lead.customFields ? lead.customFields[key] : ""}
+          </td>
+        ))}
+
+      <td className="my-auto flex h-full flex-row items-center gap-2 px-2 font-normal text-gray-500">
         <IconEdit
           className="cursor-pointer select-none transition hover:bg-gray-400"
           onClick={() => editLead()}

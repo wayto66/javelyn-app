@@ -25,11 +25,13 @@ import { jsonToGraphQLString } from "~/helpers/jsonToGraphQLString";
 import { TaskCard } from "~/components/minis/TaskCard";
 import { QuoteTableLine } from "~/components/micros/QuoteTableLine";
 import { TicketTableLine } from "~/components/micros/TicketTableLine";
+import { IconClipboard, IconClipboardText } from "@tabler/icons-react";
 
 const EditLeadPanel = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const ctx = useContext(reactContext);
+  const { quoteFieldsToShow, leadFieldsToShow, ticketFieldsToShow } = ctx.data;
 
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [selectedTagId, setSelectedTagId] = useState<string>();
@@ -274,7 +276,13 @@ const EditLeadPanel = () => {
     );
     return quotes?.map((quote) => {
       if (quote)
-        return <QuoteTableLine quote={quote} handleEdit={handleQuoteEdit} />;
+        return (
+          <QuoteTableLine
+            quote={quote}
+            handleEdit={handleQuoteEdit}
+            fieldsToShow={quoteFieldsToShow}
+          />
+        );
     });
   }, [leadInfo?.quotes]);
 
@@ -285,7 +293,11 @@ const EditLeadPanel = () => {
     return tickets?.map((ticket) => {
       if (ticket)
         return (
-          <TicketTableLine ticket={ticket} handleEdit={handleTicketEdit} />
+          <TicketTableLine
+            ticket={ticket}
+            handleEdit={handleTicketEdit}
+            fieldsToShow={ticketFieldsToShow}
+          />
         );
     });
   }, [leadInfo?.tickets]);
@@ -297,10 +309,10 @@ const EditLeadPanel = () => {
 
   return (
     <>
-      <div className="mx-auto flex w-full max-w-[750px] flex-col gap-2 rounded-md border bg-white p-4">
+      <div className="mx-auto flex w-full max-w-[900px] flex-col gap-2 rounded-md bg-white p-8 shadow-2xl">
         <div className="flex flex-row justify-between">
-          <div className="text-3xl font-extrabold text-jpurple">
-            Editar Lead
+          <div className="text-4xl font-extrabold text-jpurple">
+            {leadInfo?.name}
           </div>
         </div>
 
@@ -382,17 +394,17 @@ const EditLeadPanel = () => {
         </form>
       </div>
 
-      <div className="mx-auto mt-12 mb-32 flex w-full min-w-[50vw] max-w-[1200px] flex-col rounded-md border shadow-xl">
-        <div className="grid grid-cols-3 rounded-t-md bg-white ">
+      <div className="mx-auto mt-12 mb-32 flex w-full min-w-[50vw] max-w-[900px] flex-col rounded-md  ">
+        <div className="grid grid-cols-3 gap-12 rounded-t-md  ">
           <div
-            className={`cursor-pointer rounded-tl-md border-r p-4 text-center font-semibold transition hover:opacity-80 ${
+            className={`flex cursor-pointer flex-row items-center justify-center gap-2 rounded-md rounded-tl-md border-r p-4 text-center font-semibold shadow-md transition hover:opacity-80 ${
               selectedExtraPanel === "tasks"
                 ? "bg-jpurple text-white"
                 : "bg-white text-black"
             }`}
             onClick={() => setSelectedExtraPanel("tasks")}
           >
-            Ver Tarefas
+            <IconClipboardText /> Ver Tarefas
           </div>
           <div
             className={`cursor-pointer border-r p-4 text-center font-semibold transition hover:opacity-80 ${
@@ -417,7 +429,7 @@ const EditLeadPanel = () => {
         </div>
 
         {selectedExtraPanel === "tasks" && (
-          <div className="mt-6 mb-12 grid  grid-cols-1 gap-5 p-4 xl:grid-cols-2 2xl:grid-cols-3">
+          <div className="mt-6 mb-12 grid  grid-cols-1 gap-5  xl:grid-cols-2 2xl:grid-cols-3">
             {tasksDisplay}
           </div>
         )}

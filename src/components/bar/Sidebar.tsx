@@ -91,8 +91,8 @@ const sideMenuOptions: TSideMenuOption[] = [
         icon: <IconHome />,
       },
       {
-        name: "Anúncios",
-        panelName: "dashboard-ads",
+        name: "Vendas",
+        panelName: "dashboard-tickets",
         children: [],
         icon: <IconAd2 />,
       },
@@ -110,8 +110,8 @@ const sideMenuOptions: TSideMenuOption[] = [
     panelName: "contact",
     children: [],
     icon: <IconMessage />,
+    requiredPermission: "throw",
   },
-
   {
     name: "Leads",
     panelName: "leads",
