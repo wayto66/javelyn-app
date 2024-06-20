@@ -11,10 +11,13 @@ import axios from "axios";
 const authLink = setContext(async (req, { headers, ...rest }) => {
   // Obter a assinatura HMAC do servidor
   const { graphqlContext } = rest;
-
+  const baseURL =
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:3000"
+      : "https://javelyn.com.br";
   // Garanta que graphqlContext existe
   const body = graphqlContext;
-  const hmacResponse = await axios.post("/api/hmac", body);
+  const hmacResponse = await axios.post(`${baseURL}/api/hmac`, body);
   const hmacSignature = hmacResponse.data.signature;
 
   return {
