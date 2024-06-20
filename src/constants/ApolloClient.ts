@@ -14,7 +14,7 @@ const authLink = setContext(async (req, { headers, ...rest }) => {
   const baseURL =
     process.env.NODE_ENV === "development"
       ? "http://localhost:3000"
-      : "https://javelyn.com.br";
+      : "https://www.javelyn.com.br";
   // Garanta que graphqlContext existe
   const body = graphqlContext;
   const hmacResponse = await axios.post(`${baseURL}/api/hmac/`, body);

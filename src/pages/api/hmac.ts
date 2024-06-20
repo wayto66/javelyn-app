@@ -7,14 +7,16 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
   try {
     if (req.method === "OPTIONS") {
       res.setHeader("Access-Control-Allow-Origin", [
+        "https://www.javelyn.vercel.app",
+        "https://www.javelyn.com.br",
         "https://javelyn.vercel.app",
         "https://javelyn.com.br",
       ]);
       res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
       res.setHeader("Access-Control-Allow-Headers", "Content-Type");
       res.setHeader("Access-Control-Max-Age", "86400"); // Cache a resposta por 1 dia
-      res.status(204).end();
-      return;
+
+      return res.status(204).end();
     }
     const { body } = req;
     const secret = process.env.HMAC_SECRET as string;
@@ -36,6 +38,8 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
     const signature = hmac.digest("hex");
 
     res.setHeader("Access-Control-Allow-Origin", [
+      "https://www.javelyn.vercel.app",
+      "https://www.javelyn.com.br",
       "https://javelyn.vercel.app",
       "https://javelyn.com.br",
     ]);
