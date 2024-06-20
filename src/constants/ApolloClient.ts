@@ -17,7 +17,7 @@ const authLink = setContext(async (req, { headers, ...rest }) => {
       : "https://javelyn.com.br";
   // Garanta que graphqlContext existe
   const body = graphqlContext;
-  const hmacResponse = await axios.post(`${baseURL}/api/hmac`, body);
+  const hmacResponse = await axios.post(`${baseURL}/api/hmac/`, body);
   const hmacSignature = hmacResponse.data.signature;
 
   return {
