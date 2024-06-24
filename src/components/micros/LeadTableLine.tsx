@@ -5,6 +5,7 @@ import {
   IconQuestionMark,
   IconX,
   IconCheck,
+  IconBrandWhatsapp,
 } from "@tabler/icons-react";
 import { useContext, useMemo } from "react";
 import { getOptimalTextColor } from "~/helpers/getOptimalTextColor";
@@ -42,6 +43,10 @@ export const LeadTableLine = ({
   const restoreLead = () => {
     if (!handleRestore) return;
     handleRestore(lead);
+  };
+
+  const whatsapp = () => {
+    window.open(`https://wa.me/${lead.phone}`, "_blank");
   };
 
   const tagsDisplay = lead.tags?.map((tag, id) => {
@@ -160,6 +165,12 @@ export const LeadTableLine = ({
           <IconRestore
             className="cursor-pointer select-none transition hover:bg-gray-400"
             onClick={() => restoreLead()}
+          />
+        )}
+        {lead.phone && (
+          <IconBrandWhatsapp
+            className="cursor-pointer select-none transition hover:bg-gray-400"
+            onClick={whatsapp}
           />
         )}
       </td>

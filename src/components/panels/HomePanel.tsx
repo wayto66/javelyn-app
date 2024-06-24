@@ -234,43 +234,45 @@ const HomePanel = () => {
               Novo Produto
             </div>
           </div>
-          <div className="">
-            <div className="flex flex-col rounded-md  p-4 " id="home-calendar">
-              {calendarEvents ? (
-                <FullCalendar
-                  plugins={[dayGridPlugin]}
-                  dayHeaderClassNames={[
-                    "bg-[mediumpurple]",
-                    "rounded-t-md",
-                    "text-white",
-                    "font-extrabold",
-                  ]}
-                  firstDay={1}
-                  stickyHeaderDates
-                  titleFormat={{ year: "numeric", month: "long" }}
-                  headerToolbar={{
-                    start: "title", // will normally be on the left. if RTL, will be on the right
 
-                    center: "text asdadasda",
+          <div
+            className="flex max-h-[50vh] flex-col rounded-md p-4 "
+            id="home-calendar"
+          >
+            {calendarEvents ? (
+              <FullCalendar
+                plugins={[dayGridPlugin]}
+                dayHeaderClassNames={[
+                  "bg-[mediumpurple]",
+                  "rounded-t-md",
+                  "text-white",
+                  "font-extrabold",
+                ]}
+                firstDay={1}
+                stickyHeaderDates
+                titleFormat={{ year: "numeric", month: "long" }}
+                headerToolbar={{
+                  start: "title", // will normally be on the left. if RTL, will be on the right
 
-                    end: "today prev,next", // will normally be on the right. if RTL, will be on the left
-                  }}
-                  locale={"pt-BR"}
-                  initialView="dayGridMonth"
-                  expandRows={true}
-                  events={calendarEvents}
-                  eventBorderColor="white"
-                  eventInteractive={true}
-                  eventClick={handleEventClick}
-                  dayCellClassNames="bg-[#41424c] text-white"
-                  nextDayThreshold={"20:00:00"}
-                  dateAlignment="month"
-                  dayMaxEventRows={2}
-                />
-              ) : (
-                <BoxLoadingPlaceholder />
-              )}
-            </div>
+                  center: "text ",
+
+                  end: "today prev,next", // will normally be on the right. if RTL, will be on the left
+                }}
+                locale={"pt-BR"}
+                initialView="dayGridMonth"
+                expandRows={true}
+                events={calendarEvents}
+                eventBorderColor="white"
+                eventInteractive={true}
+                eventClick={handleEventClick}
+                dayCellClassNames="bg-[#41424c] text-white !h-[100px]"
+                nextDayThreshold={"20:00:00"}
+                dateAlignment="month"
+                dayMaxEventRows={2}
+              />
+            ) : (
+              <BoxLoadingPlaceholder />
+            )}
           </div>
         </div>
       </div>
