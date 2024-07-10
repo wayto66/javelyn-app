@@ -28,7 +28,7 @@ export interface IFieldsFormParams {
   status: boolean;
 }
 
-export const LeadFieldChooseModal = ({
+export const KanbanFieldChooseModal = ({
   closeFieldChooseModal,
   isFieldChooseModalVisible,
   reloadLeads,
@@ -38,29 +38,25 @@ export const LeadFieldChooseModal = ({
   const { register, getValues } = useForm<IFieldsFormParams>({
     defaultValues: {
       CPF:
-        typeof ctx.data.leadFieldsToShow.CPF === "boolean"
-          ? ctx.data.leadFieldsToShow.CPF
+        typeof ctx.data.kanbanFieldsToShow.CPF === "boolean"
+          ? ctx.data.kanbanFieldsToShow.CPF
           : true,
       name: true,
       mail:
-        typeof ctx.data.leadFieldsToShow.mail === "boolean"
-          ? ctx.data.leadFieldsToShow.mail
+        typeof ctx.data.kanbanFieldsToShow.mail === "boolean"
+          ? ctx.data.kanbanFieldsToShow.mail
           : true,
       phone:
-        typeof ctx.data.leadFieldsToShow.phone === "boolean"
-          ? ctx.data.leadFieldsToShow.phone
+        typeof ctx.data.kanbanFieldsToShow.phone === "boolean"
+          ? ctx.data.kanbanFieldsToShow.phone
           : true,
       tags:
-        typeof ctx.data.leadFieldsToShow.tags === "boolean"
-          ? ctx.data.leadFieldsToShow.tags
-          : true,
-      status:
-        typeof ctx.data.leadFieldsToShow.status === "boolean"
-          ? ctx.data.leadFieldsToShow.status
+        typeof ctx.data.kanbanFieldsToShow.tags === "boolean"
+          ? ctx.data.kanbanFieldsToShow.tags
           : true,
       customFields:
-        typeof ctx.data.leadFieldsToShow.customFields !== "boolean"
-          ? ctx.data.leadFieldsToShow.customFields
+        typeof ctx.data.kanbanFieldsToShow.customFields !== "boolean"
+          ? ctx.data.kanbanFieldsToShow.customFields
           : {},
     },
   });
@@ -72,13 +68,12 @@ export const LeadFieldChooseModal = ({
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
 
-    const { CPF, customFields, mail, name, phone, tags, date, status } =
-      getValues();
+    const { CPF, customFields, mail, name, phone, tags, date } = getValues();
 
     ctx.setData((prev) => {
       return {
         ...prev,
-        leadFieldsToShow: {
+        kanbanFieldsToShow: {
           date,
           CPF,
           mail,
@@ -86,7 +81,6 @@ export const LeadFieldChooseModal = ({
           tags,
           name,
           customFields,
-          status,
         },
       };
     });
@@ -154,15 +148,7 @@ export const LeadFieldChooseModal = ({
             />
             <div className="font-semibold text-gray-700">Email</div>
           </div>
-          <div className="flex flex-row items-center gap-2" key={`attr-status`}>
-            <input
-              type="checkbox"
-              className="form-checkbox h-4 w-4 rounded border-gray-300 text-blue-600 transition duration-200 ease-in-out focus:ring-blue-500"
-              {...register(`status`)}
-              defaultChecked={false}
-            />
-            <div className="font-semibold text-gray-700">Situação</div>
-          </div>
+
           <div className="flex flex-row items-center gap-2" key={`attr-tags`}>
             <input
               type="checkbox"

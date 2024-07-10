@@ -1,16 +1,16 @@
 import { ChangeEvent, useContext, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
-import ConectionHub, { EConnectionStatus } from "../minis/ConectionHub";
+import ConectionHub, { EConnectionStatus } from "../../minis/ConectionHub";
 import { reactContext } from "~/pages/_app";
 import { toast } from "react-toastify";
-import PurpleButton from "../micros/PurpleButton";
+import PurpleButton from "../../micros/PurpleButton";
 import { fetchData } from "~/handlers/fetchData";
 import { handlePanelChange } from "~/helpers/handlePanelChange";
 import { useRouter } from "next/router";
-import { MessageConfirmationModal } from "../modals/MessageConfirmationModal";
+import { MessageConfirmationModal } from "../../modals/MessageConfirmationModal";
 import { Lead } from "~/types/graphql";
 import { InputSanitizer } from "~/helpers/InputSanitizer";
-import { LeadContactTableLine } from "../micros/LeadContactTableLine";
+import { LeadContactTableLine } from "../../micros/LeadContactTableLine";
 import { IconPlus, IconTool } from "@tabler/icons-react";
 import axios from "axios";
 

@@ -11,6 +11,8 @@ import {
   IconLockOpen,
   IconLogout,
   IconMessage,
+  IconMessageForward,
+  IconMessageUp,
   IconSettings,
   IconStars,
   IconTag,
@@ -19,6 +21,7 @@ import {
   IconUser,
   IconUserPlus,
   IconUsers,
+  IconUserScan,
   IconUsersPlus,
 } from "@tabler/icons-react";
 import { signOut, useSession } from "next-auth/react";
@@ -106,10 +109,17 @@ const sideMenuOptions: TSideMenuOption[] = [
     icon: <IconDashboard />,
   },
   {
-    name: "Contato",
+    name: "Arremessador",
     panelName: "contact",
-    children: [],
-    icon: <IconMessage />,
+    children: [
+      {
+        name: "Importar Leads",
+        panelName: "contact-import",
+        children: [],
+        icon: <IconUsers />,
+      },
+    ],
+    icon: <IconMessageUp />,
     requiredPermission: "throw",
   },
   {
@@ -121,6 +131,18 @@ const sideMenuOptions: TSideMenuOption[] = [
         panelName: "leads",
         children: [],
         icon: <IconUsers />,
+      },
+      {
+        name: "Lead Flow",
+        panelName: "leads-flow",
+        children: [],
+        icon: <IconUsers />,
+      },
+      {
+        name: "Leads Status",
+        panelName: "leads-status",
+        children: [],
+        icon: <IconUserScan />,
       },
       {
         name: "Criar Lead",

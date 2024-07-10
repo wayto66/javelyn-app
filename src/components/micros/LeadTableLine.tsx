@@ -106,6 +106,17 @@ export const LeadTableLine = ({
       {fieldsToShow.CPF && <td className="px-2 ">{lead.CPF}</td>}
       {fieldsToShow.phone && <td className="px-2">{lead.phone}</td>}
       {fieldsToShow.mail && <td className="px-2">{lead.mail}</td>}
+      {fieldsToShow.status && (
+        <td
+          className="px-2 text-start text-xs font-semibold tracking-tight"
+          style={{
+            backgroundColor: lead.status?.color,
+            color: getOptimalTextColor(lead.status?.color),
+          }}
+        >
+          {lead.status?.name}
+        </td>
+      )}
 
       {fieldsToShow.tags && (
         <td className=" px-2">

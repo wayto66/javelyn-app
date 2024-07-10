@@ -3,6 +3,7 @@ import {
   Category,
   Company,
   Lead,
+  LeadStatus,
   Product,
   Quote,
   Tag,
@@ -23,6 +24,7 @@ export type TContextData = {
   currentLeadData: Lead | undefined;
   currentLeads: Lead[] | undefined;
   attributes: Attribute[] | undefined;
+  leadStatus: LeadStatus[] | undefined;
   currentTaskData: Task | undefined;
   currentTagData: Tag | undefined;
   currentQuoteData: Quote | undefined;
@@ -33,6 +35,7 @@ export type TContextData = {
   taskTargetDate: Date;
   isLoading: boolean;
   leadFieldsToShow: Record<string, boolean | Record<string, boolean>>;
+  kanbanFieldsToShow: Record<string, boolean | Record<string, boolean>>;
   quoteFieldsToShow: Record<string, boolean | Record<string, boolean>>;
   ticketFieldsToShow: Record<string, boolean | Record<string, boolean>>;
 

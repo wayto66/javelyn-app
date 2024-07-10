@@ -4,6 +4,7 @@ import { type AppType } from "next/app";
 import "react-calendar/dist/Calendar.css";
 import "react-date-picker/dist/DatePicker.css";
 import "react-toastify/dist/ReactToastify.css";
+import "react-tooltip/dist/react-tooltip.css";
 
 const contextDefaultValue: TContextData = {
   companyData: undefined,
@@ -18,6 +19,7 @@ const contextDefaultValue: TContextData = {
   currentProductData: undefined,
   currentTaskData: undefined,
   attributes: undefined,
+  leadStatus: undefined,
   currentTagData: undefined,
   currentTicketData: undefined,
   currentQuoteData: undefined,
@@ -33,6 +35,13 @@ const contextDefaultValue: TContextData = {
     mail: true,
     customFields: {},
     date: true,
+    status: true,
+  },
+  kanbanFieldsToShow: {
+    name: true,
+    phone: true,
+    tags: true,
+    customFields: {},
   },
   quoteFieldsToShow: {
     name: true,
@@ -91,7 +100,6 @@ import startTooltips from "~/helpers/startTooltips";
 import "~/styles/globals.css";
 import { TContextData } from "~/types/Context";
 import ConfirmationModal from "~/components/modals/ConfirmationModal";
-import { Head } from "next/document";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,

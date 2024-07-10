@@ -25,7 +25,7 @@ import EditProductPanel from "~/components/panels/product/EditProductPanel";
 import { useRouter } from "next/router";
 import { fetchData } from "~/handlers/fetchData";
 import TicketPanel from "~/components/panels/ticket/TicketPanel";
-import ContactPanel from "~/components/panels/ContactPanel";
+import ContactPanel from "~/components/panels/contact/ContactPanel";
 import CreateTicketPanel from "~/components/panels/ticket/CreateTicketPanel";
 import EditTicketPanel from "~/components/panels/ticket/EditTicketPanel";
 import CreateQuotePanel from "~/components/panels/quote/CreateQuotePanel";
@@ -44,10 +44,15 @@ import CreateAttributePanel from "~/components/panels/attribute/CreateAttributeP
 import EditAttributePanel from "~/components/panels/attribute/EditAttributePanel";
 import EditUserPanel from "~/components/panels/user/EditUserPanel";
 import { DashboardPanel } from "~/components/panels/dashboard/DashboardPanel";
+import ImportWhatsappLeadsPanel from "~/components/panels/contact/ImportWhatsappLeadsPanel";
+import LeadFlow from "~/components/panels/lead/LeadFlow";
+import LeadStatusPanel from "~/components/panels/lead/LeadStatusPanel";
+import CreateLeadStatusPanel from "~/components/panels/lead/CreateLeadStatusPanel";
 
 const panelMap = new Map<string, JSX.Element>([
   ["home", <HomePanel />],
   ["contact", <ContactPanel />],
+  ["contact-import", <ImportWhatsappLeadsPanel />],
   ["tickets", <TicketPanel />],
   ["tickets-create", <CreateTicketPanel />],
   ["tickets-edit", <EditTicketPanel />],
@@ -67,6 +72,9 @@ const panelMap = new Map<string, JSX.Element>([
   ["tasks-category-edit", <EditTaskCategoryPanel />],
   ["tasks-categories", <TaskCategoryPanel />],
   ["leads", <LeadPanel />],
+  ["leads-flow", <LeadFlow />],
+  ["leads-status", <LeadStatusPanel />],
+  ["leads-status-create", <CreateLeadStatusPanel />],
   ["leads-create", <CreateLeadPanel />],
   ["leads-edit", <EditLeadPanel />],
   ["quotes", <QuotePanel />],

@@ -55,7 +55,6 @@ const LeadPanel = () => {
   const [isFieldChooseModalVisible, setFieldChooseModalVisible] =
     useState(false);
   const [filterModalVisibility, setFilterModalVisibility] = useState(false);
-  const [fieldsModalVisibility, setFieldsModalVisibility] = useState(false);
   const [filters, setFilters] = useState<AppFilterInput>({
     sort: SortBy[router.query.sort as SortBy] ?? SortBy.NEWER,
     includeInactive: stringToBoolean(router.query.includeInactive),
@@ -106,13 +105,9 @@ const LeadPanel = () => {
           customFilters: {${jsonToGraphQLString(customFilters)}}
         }) {
           objects {
-          id name phone CPF isActive customFields mail
-          createdAt
-          tags {
-            id
-            name
-            colorHex
-          }
+          id name phone CPF isActive customFields mail createdAt     
+          tags { id name colorHex }
+          status { name color }
           }
           total
         }
@@ -328,36 +323,7 @@ const LeadPanel = () => {
             <IconSearch />
             <span className="text-sm font-semibold">Buscar</span>
           </button>
-          <div className="relative hidden">
-            <button
-              className="flex flex-row items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 transition hover:bg-jpurple hover:text-white"
-              onClick={() => setFieldsModalVisibility((prev) => !prev)}
-            >
-              <IconForms />
-              <span className="text-sm font-semibold">Campos</span>
-            </button>
-            {fieldsModalVisibility && (
-              <div className="absolute right-0 top-[100%] z-[99] flex min-w-[250px] flex-col gap-2 rounded-b-md bg-gray-200 p-4 shadow-xl">
-                <div className="flex flex-row gap-4 border-b border-jpurple p-1">
-                  <input type="checkbox" />
-                  <span>Entrada</span>
-                </div>
-                <div className="flex flex-row gap-4 border-b border-jpurple p-1">
-                  <input type="checkbox" />
-                  <span>CPF</span>
-                </div>
-                <div className="mt-6 flex flex-row gap-3">
-                  <button
-                    className="rounded-md bg-red-500 px-3 py-1 text-white transition hover:bg-red-700"
-                    onClick={() => setFieldsModalVisibility(false)}
-                  >
-                    <IconX />
-                  </button>
-                  <DefaultButton className="grow">Salvar</DefaultButton>
-                </div>
-              </div>
-            )}
-          </div>
+
           <button
             className="flex flex-row items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 transition hover:bg-jpurple hover:text-white"
             onClick={() => setFilterModalVisibility(true)}
@@ -371,13 +337,15 @@ const LeadPanel = () => {
         </div>
         <div className="flex flex-row-reverse items-center justify-between">
           <div className="flex flex-row items-end   gap-4">
-            <button
-              className="flex h-full flex-row items-center gap-2 rounded-md border-b px-5 py-2 text-sm font-bold text-jpurple shadow-xl transition hover:border-jpurple hover:opacity-80"
-              onClick={handleThrow}
-            >
-              <IconSend />
-              Arremessar
-            </button>
+            {session?.user?.permissions?.throw && (
+              <button
+                className="flex h-full flex-row items-center gap-2 rounded-md border-b px-5 py-2 text-sm font-bold text-jpurple shadow-xl transition hover:border-jpurple hover:opacity-80"
+                onClick={handleThrow}
+              >
+                <IconSend />
+                Arremessar
+              </button>
+            )}
             <button
               className="flex h-full flex-row items-center gap-2 rounded-md border-b px-5 py-2 text-sm font-bold text-jpurple shadow-xl transition hover:border-jpurple hover:opacity-80"
               onClick={handleCreateTask}
@@ -436,6 +404,11 @@ const LeadPanel = () => {
               {fieldsToShow.mail && (
                 <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
                   Email
+                </th>
+              )}
+              {fieldsToShow.status && (
+                <th className="cursor-pointer  from-[MediumPurple] to-[MediumSlateBlue] px-2 text-start transition active:bg-gradient-to-r">
+                  Situação
                 </th>
               )}
               {fieldsToShow.tags && (

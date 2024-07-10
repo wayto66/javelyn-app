@@ -1,5 +1,6 @@
-export function getOptimalTextColor(hexColor: string): string {
+export function getOptimalTextColor(hexColor: string | undefined): string {
   // Remove o # do hex da cor
+  if (!hexColor) return "black";
   hexColor = hexColor.replace("#", "");
 
   // Converte o hex da cor para RGB

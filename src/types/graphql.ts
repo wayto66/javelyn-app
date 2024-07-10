@@ -90,6 +90,19 @@ export interface UpdateCompanyInput {
   customFields?: Nullable<CustomScalar>;
 }
 
+export interface CreateLeadStatusInput {
+  name: string;
+  companyId: number;
+  color: string;
+}
+
+export interface UpdateLeadStatusInput {
+  id: number;
+  isActive?: Nullable<boolean>;
+  name?: Nullable<string>;
+  color: string;
+}
+
 export interface CreateLeadInput {
   companyId: number;
   userId: number;
@@ -98,7 +111,7 @@ export interface CreateLeadInput {
   phone?: Nullable<string>;
   mail?: Nullable<string>;
   adOrigin?: Nullable<string>;
-  status?: Nullable<string>;
+  statusId?: Nullable<number>;
   observation?: Nullable<string>;
   customFields?: Nullable<CustomScalar>;
   age?: Nullable<number>;
@@ -129,7 +142,7 @@ export interface UpdateLeadInput {
   phone?: Nullable<string>;
   mail?: Nullable<string>;
   adOrigin?: Nullable<string>;
-  status?: Nullable<string>;
+  statusId?: Nullable<number>;
   observation?: Nullable<string>;
   age?: Nullable<number>;
   neighborhood?: Nullable<string>;
@@ -164,6 +177,7 @@ export interface FiltersInput {
   demandAllConditions?: Nullable<boolean>;
   dateGt?: Nullable<string>;
   dateLt?: Nullable<string>;
+  customFilters?: Nullable<CustomScalar>;
 }
 
 export interface CreateProductInput {
@@ -463,7 +477,8 @@ export interface IQuery {
 
   categories(
     page: number,
-    pageSize: number
+    pageSize: number,
+    filters?: Nullable<FiltersInput>
   ): FindManyCategoryResponse | Promise<FindManyCategoryResponse>;
 
   category(id: number): Nullable<Category> | Promise<Nullable<Category>>;
@@ -473,6 +488,14 @@ export interface IQuery {
   company(
     id?: Nullable<number>
   ): Nullable<Company> | Promise<Nullable<Company>>;
+
+  allLeadStatus(
+    page: number,
+    pageSize: number,
+    filters?: Nullable<FiltersInput>
+  ): FindAllLeadStatusResponse | Promise<FindAllLeadStatusResponse>;
+
+  leadStatus(id: number): Nullable<LeadStatus> | Promise<Nullable<LeadStatus>>;
 
   leads(
     page: number,
@@ -526,7 +549,8 @@ export interface IQuery {
 
   taskCategories(
     page: number,
-    pageSize: number
+    pageSize: number,
+    filters?: Nullable<FiltersInput>
   ): FindManyTaskCategoryResponse | Promise<FindManyTaskCategoryResponse>;
 
   taskCategory(
@@ -597,12 +621,28 @@ export interface IMutation {
 
   removeCompany(id: number): Nullable<Company> | Promise<Nullable<Company>>;
 
+  createLeadStatus(
+    createLeadStatusInput: CreateLeadStatusInput
+  ): LeadStatus | Promise<LeadStatus>;
+
+  updateLeadStatus(
+    updateLeadStatusInput: UpdateLeadStatusInput
+  ): LeadStatus | Promise<LeadStatus>;
+
+  removeLeadStatus(
+    id: number
+  ): Nullable<LeadStatus> | Promise<Nullable<LeadStatus>>;
+
   createLead(
     createLeadInput: CreateLeadInput
   ): CreateLeadResponse | Promise<CreateLeadResponse>;
 
   createLeads(
     createLeadsInput: CreateLeadsInput
+  ): CreateLeadsResponse | Promise<CreateLeadsResponse>;
+
+  importWhatsappLeads(
+    importWhatsappLeadsInput: CreateLeadsInput
   ): CreateLeadsResponse | Promise<CreateLeadsResponse>;
 
   updateLead(updateLeadInput: UpdateLeadInput): Lead | Promise<Lead>;
@@ -762,6 +802,19 @@ export interface Company {
   updatedAt: DateTime;
 }
 
+export interface LeadStatus {
+  id: number;
+  companyId: number;
+  name: string;
+  color: string;
+  isActive: boolean;
+}
+
+export interface FindAllLeadStatusResponse {
+  objects: Nullable<LeadStatus>[];
+  total: number;
+}
+
 export interface Lead {
   id: number;
   uuid?: Nullable<string>;
@@ -772,7 +825,7 @@ export interface Lead {
   phone?: Nullable<string>;
   mail?: Nullable<string>;
   adOrigin?: Nullable<string>;
-  status?: Nullable<string>;
+  statusId?: Nullable<number>;
   observation?: Nullable<string>;
   customFields?: Nullable<CustomScalar>;
   age?: Nullable<number>;
@@ -792,6 +845,7 @@ export interface Lead {
   quotes?: Nullable<Nullable<Quote>[]>;
   user: User;
   company: Company;
+  status?: Nullable<LeadStatus>;
   isRescue: boolean;
   isActive: boolean;
   createdAt: DateTime;
@@ -805,7 +859,7 @@ export interface FindManyLeadsResponse {
 
 export interface ErrorResponse {
   message: string;
-  status: string;
+  statusName: string;
 }
 
 export interface CreateLeadResponse {

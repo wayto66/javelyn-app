@@ -14,7 +14,12 @@ import { useSession } from "next-auth/react";
 import { fetchData } from "~/handlers/fetchData";
 import { reactContext } from "~/pages/_app";
 import { useRouter } from "next/router";
-import { AtributeType, CreateLeadInput, Tag } from "~/types/graphql";
+import {
+  AtributeType,
+  CreateLeadInput,
+  LeadStatus,
+  Tag,
+} from "~/types/graphql";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { TagSelectionBox } from "~/components/minis/TagSelectionBox";
@@ -28,6 +33,7 @@ const CreateLeadPanel = () => {
   const ctx = useContext(reactContext);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [selectedTagId, setSelectedTagId] = useState<string>();
+  const [leadStatuses, setLeadStatuses] = useState<LeadStatus[]>([]);
 
   const { register, resetField, setValue, getValues, reset, watch, trigger } =
     useForm<CreateLeadInput>();
@@ -82,6 +88,41 @@ const CreateLeadPanel = () => {
     }
   };
 
+  const getLeadStatuses = async (e?: FormEvent) => {
+    e?.preventDefault();
+    const response = await fetchData({
+      query: `
+      query allLeadStatus {
+                allLeadStatus(page: 1, pageSize: 1111, filters: {
+          companyId: ${session?.user.companyId}
+        }) {
+          objects {
+          id
+          name
+          }
+          total
+        }
+      }
+      `,
+      token: session?.user.accessToken ?? "",
+      ctx,
+    });
+    const leadStatuses = response?.data?.allLeadStatus.objects;
+    if (!leadStatuses) return;
+
+    setLeadStatuses(leadStatuses);
+  };
+
+  const leadStatusesOptions = useMemo(() => {
+    return leadStatuses.map((leadStatus) => (
+      <option value={leadStatus.id}>{leadStatus.name}</option>
+    ));
+  }, [leadStatuses]);
+
+  useEffect(() => {
+    void getLeadStatuses();
+  }, []);
+
   return (
     <>
       <div className="mx-auto flex w-full max-w-[750px] flex-col gap-2 rounded-md border bg-white p-4">
@@ -124,6 +165,16 @@ const CreateLeadPanel = () => {
                 className="rounded-md border px-2 py-1"
                 {...register("CPF")}
               />
+            </div>
+
+            <div className="flex flex-col">
+              <div className="text-sm text-gray-500">Status</div>
+              <select
+                className="rounded-md border px-2 py-1"
+                {...register("statusId")}
+              >
+                {leadStatusesOptions}
+              </select>
             </div>
           </div>
 

@@ -9,6 +9,7 @@ import {
   AtributeType,
   Attribute,
   Lead,
+  LeadStatus,
   Quote,
   Tag,
   Task,
@@ -31,9 +32,10 @@ const EditLeadPanel = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const ctx = useContext(reactContext);
-  const { quoteFieldsToShow, leadFieldsToShow, ticketFieldsToShow } = ctx.data;
+  const { quoteFieldsToShow, ticketFieldsToShow } = ctx.data;
 
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [leadStatuses, setLeadStatuses] = useState<LeadStatus[]>([]);
   const [selectedTagId, setSelectedTagId] = useState<string>();
   const [selectedExtraPanel, setSelectedExtraPanel] = useState("tasks");
   const [leadInfo, setLeadInfo] = useState<Lead | undefined>();
@@ -52,7 +54,7 @@ const EditLeadPanel = () => {
 
   const updateLead = async (e: FormEvent) => {
     e.preventDefault();
-    const { id, observation, name, phone, CPF, mail } = getValues();
+    const { id, observation, name, phone, CPF, mail, statusId } = getValues();
     const customFields = customFieldsGetValues();
 
     const tagsIds = selectedTags.map((t) => t.id);
@@ -80,6 +82,7 @@ const EditLeadPanel = () => {
           userId: session?.user.id,
           tagsIds,
           customFields,
+          statusId: Number(statusId),
         },
       },
     });
@@ -302,9 +305,44 @@ const EditLeadPanel = () => {
     });
   }, [leadInfo?.tickets]);
 
+  const getLeadStatuses = async (e?: FormEvent) => {
+    e?.preventDefault();
+    const response = await fetchData({
+      query: `
+      query allLeadStatus {
+        allLeadStatus(page: 1, pageSize: 1111, filters: {
+          companyId: ${session?.user.companyId}
+        }) {
+          objects {
+          id
+          name
+          }
+          total
+        }
+      }
+      `,
+      token: session?.user.accessToken ?? "",
+      ctx,
+    });
+    const leadStatuses = response?.data?.allLeadStatus.objects;
+    if (!leadStatuses) return;
+
+    setLeadStatuses(leadStatuses);
+  };
+
+  const leadStatusesOptions = useMemo(() => {
+    const firstStatus = leadStatuses[0];
+    if (!firstStatus) return [];
+    setValue("statusId", firstStatus.id);
+    return leadStatuses.map((leadStatus) => (
+      <option value={leadStatus.id}>{leadStatus.name}</option>
+    ));
+  }, [leadStatuses]);
+
   useEffect(() => {
     if (!session) return;
-    getLeadInfo();
+    void getLeadInfo();
+    void getLeadStatuses();
   }, [session]);
 
   return (
@@ -351,6 +389,16 @@ const EditLeadPanel = () => {
                 className="rounded-md border px-2 py-1"
                 {...register("CPF")}
               />
+            </div>
+
+            <div className="flex flex-col">
+              <div className="text-sm text-gray-500">Status</div>
+              <select
+                className="rounded-md border px-2 py-1"
+                {...register("statusId")}
+              >
+                {leadStatusesOptions}
+              </select>
             </div>
           </div>
 
