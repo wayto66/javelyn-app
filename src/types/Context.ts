@@ -1,3 +1,4 @@
+import { EConnectionStatus } from "~/components/minis/ConectionHub";
 import {
   Attribute,
   Category,
@@ -38,6 +39,7 @@ export type TContextData = {
   kanbanFieldsToShow: Record<string, boolean | Record<string, boolean>>;
   quoteFieldsToShow: Record<string, boolean | Record<string, boolean>>;
   ticketFieldsToShow: Record<string, boolean | Record<string, boolean>>;
+  connectionStatus: EConnectionStatus;
 
   showClientEditBox: boolean;
   showEvaluationEditBox: boolean;

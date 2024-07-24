@@ -15,10 +15,13 @@ import {
   IconDeviceFloppy,
   IconDownload,
   IconForms,
+  IconInfoCircle,
   IconLoader2,
   IconPlus,
   IconSearch,
   IconSend,
+  IconSortAscendingLetters,
+  IconSortAZ,
   IconTableImport,
   IconTrash,
   IconX,
@@ -45,9 +48,10 @@ import { getOptimalTextColor } from "~/helpers/getOptimalTextColor";
 import { KanbanBoard } from "~/components/kanban/KanbanBoard";
 import { ShineButton } from "~/components/micros/ShineButton";
 import { KanbanFieldChooseModal } from "~/components/modals/KanbanFieldChooseModal";
+import { KanbanColumnReorderModal } from "~/components/modals/KanbanColumnReorderModal";
 
 export interface LeadFlowChange {
-  leadId: number;
+  sortIndex: number;
   statusId: number | null;
 }
 
@@ -58,11 +62,14 @@ const LeadFlow = () => {
   const fieldsToShow = ctx.data.leadFieldsToShow;
   const [isFieldChooseModalVisible, setFieldChooseModalVisible] =
     useState(false);
+  const [isColumnReorderModalVisible, setColumnReorderModalVisible] =
+    useState(false);
   const [filterModalVisibility, setFilterModalVisibility] = useState(false);
 
   const [leads, setLeads] = useState<Lead[]>();
-  const [leadFlowChanges, setLeadFlowChanges] = useState<LeadFlowChange[]>([]);
-  const [changesMade, setChangesMade] = useState(false);
+  const [leadFlowChanges, setLeadFlowChanges] = useState<
+    Record<number, LeadFlowChange>
+  >({});
 
   const [leadStatuses, setLeadStatuses] = useState<LeadStatus[]>([]);
   const [filters, setFilters] = useState<AppFilterInput>({
@@ -77,7 +84,7 @@ const LeadFlow = () => {
 
   const { register, getValues } = useForm();
 
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(999);
 
   const getLeads = async (e?: FormEvent) => {
     e?.preventDefault();
@@ -97,7 +104,7 @@ const LeadFlow = () => {
           tagIds: [${tags ? tags.map((tag) => tag.id) : ""}]
         }) {
           objects {
-          id name phone CPF isActive customFields mail createdAt observation
+          id name phone CPF isActive customFields mail createdAt observation sortIndex
           
           tags { id name colorHex }
           status { id name color }
@@ -123,7 +130,7 @@ const LeadFlow = () => {
         allLeadStatus(page: 1, pageSize: 1111, filters: {
           companyId: ${session?.user.companyId}
         }) {
-          objects { id name color }
+          objects { id name color sortIndex }
           total
         }
       }
@@ -131,25 +138,30 @@ const LeadFlow = () => {
       token: session?.user.accessToken ?? "",
       ctx,
     });
-    const leadStatuses = response?.data?.allLeadStatus.objects;
+    const leadStatuses = response?.data?.allLeadStatus.objects as LeadStatus[];
     if (!leadStatuses) return;
 
-    setLeadStatuses(leadStatuses);
+    const sortedLeadStatuses = [...leadStatuses].sort(
+      (a, b) => a.sortIndex - b.sortIndex
+    );
+
+    setLeadStatuses(sortedLeadStatuses);
   };
 
   const openFieldChooseModal = () => setFieldChooseModalVisible(true);
   const closeFieldChooseModal = () => setFieldChooseModalVisible(false);
+  const openColumnReorderModal = () => setColumnReorderModalVisible(true);
+  const closeColumnReorderModal = () => setColumnReorderModalVisible(false);
 
   const handleSaveChanges = async (e: MouseEvent) => {
-    const button = e.target as HTMLElement;
-
-    for (const change of leadFlowChanges) {
+    for (const [id, change] of Object.entries(leadFlowChanges)) {
       const response = await fetchData({
         mutation: `
         mutation($input: UpdateLeadInput!) {
         updateLead(updateLeadInput: $input) {
         id
         name
+        sortIndex
         }
         }
       `,
@@ -157,14 +169,15 @@ const LeadFlow = () => {
         ctx,
         variables: {
           input: {
-            id: change.leadId,
+            id: Number(id),
             statusId: change.statusId,
+            sortIndex: change.sortIndex,
           },
         },
       });
     }
 
-    setChangesMade(false);
+    setLeadFlowChanges([]);
   };
 
   useEffect(() => {
@@ -180,6 +193,14 @@ const LeadFlow = () => {
           closeFieldChooseModal={closeFieldChooseModal}
           isFieldChooseModalVisible={isFieldChooseModalVisible}
           reloadLeads={getLeads}
+        />
+      )}
+      {isColumnReorderModalVisible && (
+        <KanbanColumnReorderModal
+          closeColumnReorderModal={closeColumnReorderModal}
+          isColumnReorderModalVisible={isColumnReorderModalVisible}
+          statuses={leadStatuses}
+          setStatuses={setLeadStatuses}
         />
       )}
       <FilterModal
@@ -248,16 +269,23 @@ const LeadFlow = () => {
             <IconForms />
             Campos para Exibir
           </button>
+          <button
+            className="  flex flex-row items-center gap-2 rounded-md border-b bg-jpurple px-5 py-2 text-sm font-bold text-white shadow-xl transition hover:border-jpurple hover:opacity-80"
+            onClick={openColumnReorderModal}
+          >
+            <IconSortAscendingLetters />
+            Organizar Colunas
+          </button>
           <div className="ml-auto flex flex-col">
             <PurpleButton
               className=" flex gap-2"
-              disabled={!changesMade}
+              disabled={!(Object.entries(leadFlowChanges).length > 0)}
               onClick={handleSaveChanges}
             >
               <IconDeviceFloppy />
               Salvar
             </PurpleButton>
-            {changesMade ? (
+            {Object.entries(leadFlowChanges).length > 0 ? (
               <div className="mt-1 w-full text-center text-xs font-semibold tracking-tight text-red-300">
                 Alterações não salvas!
               </div>
@@ -269,12 +297,16 @@ const LeadFlow = () => {
           </div>
         </div>
       </div>
+      <div className="flex flex-row items-center gap-1 text-xs text-gray-700">
+        <IconInfoCircle size={15} />
+        Segue a tecla SHIFT e role a rodinha do mouse para mover o painel
+        lateralmente
+      </div>
       <div className="mt-4 mb-12 flex max-w-[90vw] flex-row overflow-x-auto">
         <KanbanBoard
           leads={leads}
           setLeads={setLeads}
           statuses={leadStatuses}
-          setChangesMade={setChangesMade}
           setLeadFlowChanges={setLeadFlowChanges}
         />
       </div>

@@ -1,15 +1,4 @@
-import {
-  IconArrowsMaximize,
-  IconArrowsMinimize,
-  IconBrandWhatsapp,
-  IconChevronDown,
-  IconDragDrop,
-  IconEdit,
-  IconInfoCircle,
-  IconMaximize,
-  IconMinimize,
-  IconTrash,
-} from "@tabler/icons-react";
+import { IconMaximize, IconMinimize, IconPlus } from "@tabler/icons-react";
 import {
   Dispatch,
   SetStateAction,
@@ -21,15 +10,13 @@ import {
   DragDropContext,
   Droppable,
   Draggable,
-  OnDragEndResponder,
   DropResult,
-  DroppableProvided,
-  DraggableProvided,
+  OnDragEndResponder,
+  ResponderProvided,
 } from "react-beautiful-dnd";
 import { toast } from "react-toastify";
 import { getOptimalTextColor } from "~/helpers/getOptimalTextColor";
 import { Lead, LeadStatus, Tag } from "~/types/graphql";
-import { Tooltip } from "react-tooltip";
 import { reactContext } from "~/pages/_app";
 import router from "next/router";
 import { handlePanelChange } from "~/helpers/handlePanelChange";
@@ -42,59 +29,71 @@ export interface IKanbanBoardParams {
   leads: Lead[] | undefined;
   setLeads: Dispatch<SetStateAction<Lead[] | undefined>>;
   statuses: LeadStatus[];
-  setChangesMade: Dispatch<SetStateAction<boolean>>;
-  setLeadFlowChanges: Dispatch<SetStateAction<LeadFlowChange[]>>;
+  setLeadFlowChanges: Dispatch<SetStateAction<Record<number, LeadFlowChange>>>;
 }
 
-interface IColumnsData {
-  [k: number]: {
-    open: boolean;
-  };
+interface Column extends LeadStatus {
+  open: boolean;
+  cards: Lead[];
 }
 
 export const KanbanBoard = ({
   leads,
   statuses,
-  setChangesMade,
   setLeadFlowChanges,
   setLeads,
 }: IKanbanBoardParams) => {
   const ctx = useContext(reactContext);
   const { data: session } = useSession();
-  const [columnsData, setColumnsData] = useState<IColumnsData>({});
+  const [columns, setColumns] = useState<Column[]>([]);
 
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination || !leads) return;
-
+  const onDragEnd: OnDragEndResponder = (
+    result: DropResult,
+    provided: ResponderProvided
+  ) => {
+    if (!result.destination) return;
     const { source, destination, draggableId } = result;
-    const updatedLeads = Array.from(leads);
-    const targetLeadIndex = updatedLeads.findIndex(
+
+    const updatedColumns = [...columns];
+    const sourceColumn = updatedColumns?.find(
+      (col) => col.id === parseInt(source.droppableId)
+    );
+    const destinationColumn = updatedColumns?.find(
+      (col) => col.id === parseInt(destination.droppableId)
+    );
+
+    if (!sourceColumn || !destinationColumn) return;
+    const movedIndex = sourceColumn.cards.findIndex(
       (lead) => lead.id === parseInt(draggableId)
     );
-    const [movedLead] = updatedLeads.splice(targetLeadIndex, 1);
+    const [movedCard] = sourceColumn.cards.splice(movedIndex, 1);
+    if (!movedCard) return;
+    destinationColumn.cards.splice(destination.index, 0, movedCard);
 
-    if (!movedLead) return;
+    const updatedCards: Lead[] = [];
 
-    let newStatus = statuses.find(
-      (status) => status.id === parseInt(destination.droppableId)
-    );
+    for (let i = 0; i < destinationColumn.cards.length; i++) {
+      const card = destinationColumn.cards[i];
+      if (!card) continue;
+      const newCard = { ...card };
+      newCard.sortIndex = i;
+      updatedCards.push(newCard);
+    }
 
-    const newLead = {
-      ...movedLead,
-      status: newStatus,
-    };
+    setLeadFlowChanges((prev) => {
+      const changes = { ...prev };
+      for (const lead of updatedCards) {
+        changes[lead.id] = {
+          sortIndex: lead.sortIndex,
+          statusId: destinationColumn.id ?? null,
+        };
+      }
+      return changes;
+    });
 
-    updatedLeads.splice(destination.index, 0, newLead);
+    destinationColumn.cards = updatedCards;
 
-    setLeads(updatedLeads);
-    setChangesMade(true);
-    setLeadFlowChanges((prev) => [
-      ...prev,
-      {
-        leadId: movedLead.id,
-        statusId: newStatus?.id ?? null,
-      },
-    ]);
+    setColumns(updatedColumns);
   };
 
   const handleLeadEdit = (lead: Lead) => {
@@ -153,146 +152,66 @@ export const KanbanBoard = ({
   };
 
   const toggleColumn = (id: number) => {
-    setColumnsData((prev) => {
-      console.log({ open: !prev[id]?.open });
-      return {
-        ...prev,
-        [id]: {
-          open: !prev[id]?.open,
-        },
-      };
+    setColumns((prev) => {
+      const newColumns = [...prev];
+      const targetColumn = newColumns.find((col) => col.id === id);
+      if (!targetColumn) return newColumns;
+      targetColumn.open = !targetColumn.open;
+      return newColumns;
     });
   };
 
   useEffect(() => {
-    const newColumnsData: IColumnsData = {
-      0: {
-        open: true,
-      },
-    };
-
-    for (const status of statuses) {
-      newColumnsData[status.id] = {
-        open: true,
-      };
-    }
-    setColumnsData(newColumnsData);
-  }, [statuses]);
+    setColumns(
+      [
+        {
+          id: 0,
+          name: "-",
+          companyId: 0,
+          color: "",
+          isActive: true,
+          sortIndex: -1,
+        },
+        ...statuses,
+      ].map((status) => {
+        return {
+          ...status,
+          open: false,
+          cards:
+            status.id === 0
+              ? leads?.filter((lead) => lead.status === null) ?? []
+              : leads?.filter((lead) => lead.status?.id === status.id) ?? [],
+        };
+      })
+    );
+  }, [statuses, leads]);
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      {[null, ...statuses].map((status, index) => {
-        if (!status)
+      {columns?.map((status, index) => {
+        if (status.id === 0)
           return (
             <Droppable droppableId={"0"} key={0}>
               {(provided, snapshot) => (
                 <div
-                  className="flex flex-col border"
+                  className="flex min-w-[250px] flex-col border"
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  style={{
-                    maxWidth: columnsData[0]?.open ? "999999vh" : "100px",
-                    minWidth: columnsData[0]?.open ? "250px" : "100px",
-                  }}
                 >
                   <div className="flex w-full flex-row items-center justify-between gap-2 rounded-t-md bg-gray-700 py-2 px-6 text-center font-semibold tracking-tight text-white">
                     <button
                       className="transition hover:bg-gray-200/30 "
                       onClick={() => toggleColumn(0)}
                     >
-                      {columnsData[0]?.open ? (
-                        <IconMinimize />
-                      ) : (
-                        <IconMaximize />
-                      )}
+                      {status?.open ? <IconMinimize /> : <IconMaximize />}
                     </button>
                     -
                   </div>
-                  <div
-                    className="flex flex-col gap-4 overflow-hidden p-2"
-                    style={{
-                      maxHeight: columnsData[0]?.open ? "999999vh" : "200px",
-                    }}
-                  >
-                    {columnsData[0]?.open ? (
-                      leads
-                        ?.filter((lead) => lead.status === null)
-                        .map((lead, index) => (
-                          <Draggable
-                            key={lead.id}
-                            draggableId={lead.id.toString()}
-                            index={index}
-                          >
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                              >
-                                <KanbanLeadBox
-                                  lead={lead}
-                                  provided={provided}
-                                  handleEdit={handleLeadEdit}
-                                  handleRemove={handleLeadRemove}
-                                />
-                              </div>
-                            )}
-                          </Draggable>
-                        ))
-                    ) : (
-                      <div className="w-full text-center text-gray-600">
-                        {" "}
-                        ...{" "}
-                      </div>
-                    )}
-                    {provided.placeholder}
-                  </div>
-                </div>
-              )}
-            </Droppable>
-          );
-        return (
-          <Droppable droppableId={status.id.toString()} key={status.id}>
-            {(provided, snapshot) => (
-              <div
-                className={`flex flex-col border `}
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                style={{
-                  maxWidth: columnsData[status.id]?.open ? "999999vh" : "100px",
-                  minWidth: columnsData[status.id]?.open ? "250px" : "100px",
-                }}
-              >
-                <div
-                  className="sticky top-0 flex w-full flex-row items-center justify-between gap-2 rounded-t-md py-2 px-4 text-center text-sm font-semibold tracking-tight"
-                  style={{
-                    backgroundColor: status?.color,
-                    color: getOptimalTextColor(status?.color),
-                  }}
-                >
-                  <button
-                    className="transition hover:bg-gray-200/30 "
-                    onClick={() => toggleColumn(status.id)}
-                  >
-                    {columnsData[status.id]?.open ? (
-                      <IconMinimize />
-                    ) : (
-                      <IconMaximize />
-                    )}
-                  </button>
-                  {columnsData[status.id]?.open && status?.name}
-                </div>
-                <div
-                  className="flex flex-col gap-4 overflow-hidden p-2"
-                  style={{
-                    maxHeight: columnsData[status.id]?.open
-                      ? "999999vh"
-                      : "100px",
-                  }}
-                >
-                  {columnsData[status.id]?.open ? (
-                    leads
-                      ?.filter((lead) => lead.status?.id === status?.id)
+                  <div className="flex flex-col gap-4 overflow-hidden p-2">
+                    {status.cards
+                      .filter((lead) => lead.status === null)
+                      .sort((a, b) => a.sortIndex - b.sortIndex)
+                      .slice(0, status.open ? 99999 : 3)
                       .map((lead, index) => (
                         <Draggable
                           key={lead.id}
@@ -314,13 +233,80 @@ export const KanbanBoard = ({
                             </div>
                           )}
                         </Draggable>
-                      ))
-                  ) : (
-                    <div className="w-full text-center text-gray-600">
-                      {" "}
-                      ...{" "}
-                    </div>
+                      ))}
+                    {!status.open && status.cards.length > 3 && (
+                      <button
+                        className="mx-auto flex gap-1 rounded-xl bg-jpurple px-5 py-2 font-semibold text-white transition hover:bg-jpurple/80"
+                        onClick={() => toggleColumn(status.id)}
+                      >
+                        <IconPlus /> Ver Mais
+                      </button>
+                    )}
+                    {provided.placeholder}
+                  </div>
+                </div>
+              )}
+            </Droppable>
+          );
+        return (
+          <Droppable droppableId={status.id.toString()} key={status.id}>
+            {(provided, snapshot) => (
+              <div
+                className={`flex min-w-[250px] flex-col border`}
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+              >
+                <div
+                  className="sticky top-0 flex w-full flex-row items-center justify-between gap-2 rounded-t-md py-2 px-4 text-center text-sm font-semibold tracking-tight"
+                  style={{
+                    backgroundColor: status?.color,
+                    color: getOptimalTextColor(status?.color),
+                  }}
+                >
+                  <button
+                    className="transition hover:bg-gray-200/30 "
+                    onClick={() => toggleColumn(status.id)}
+                  >
+                    {status?.open ? <IconMinimize /> : <IconMaximize />}
+                  </button>
+                  {status?.name}
+                </div>
+                <div className="flex flex-col gap-4 overflow-hidden p-2">
+                  {status.cards
+                    .sort((a, b) => a.sortIndex - b.sortIndex)
+                    .slice(0, status.open ? 9999 : 3)
+                    .map((lead, index) => (
+                      <Draggable
+                        key={lead.id}
+                        draggableId={lead.id.toString()}
+                        index={index}
+                      >
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
+                            <KanbanLeadBox
+                              lead={lead}
+                              provided={provided}
+                              handleEdit={handleLeadEdit}
+                              handleRemove={handleLeadRemove}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+
+                  {!status.open && status.cards.length > 3 && (
+                    <button
+                      className="mx-auto flex gap-1 rounded-xl bg-jpurple px-5 py-2 font-semibold text-white transition hover:bg-jpurple/80"
+                      onClick={() => toggleColumn(status.id)}
+                    >
+                      <IconPlus /> Ver Mais
+                    </button>
                   )}
+
                   {provided.placeholder}
                 </div>
               </div>

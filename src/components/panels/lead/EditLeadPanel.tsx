@@ -110,6 +110,7 @@ const EditLeadPanel = () => {
           mail
           phone
           customFields
+          statusId
           tags {
             id
             name
@@ -333,11 +334,14 @@ const EditLeadPanel = () => {
   const leadStatusesOptions = useMemo(() => {
     const firstStatus = leadStatuses[0];
     if (!firstStatus) return [];
-    setValue("statusId", firstStatus.id);
+    console.log(leadInfo);
+    if (leadInfo?.statusId) setValue("statusId", leadInfo.statusId);
+    else setValue("statusId", firstStatus.id);
+
     return leadStatuses.map((leadStatus) => (
       <option value={leadStatus.id}>{leadStatus.name}</option>
     ));
-  }, [leadStatuses]);
+  }, [leadStatuses, leadInfo]);
 
   useEffect(() => {
     if (!session) return;

@@ -101,6 +101,7 @@ export interface UpdateLeadStatusInput {
   isActive?: Nullable<boolean>;
   name?: Nullable<string>;
   color: string;
+  sortIndex?: Nullable<number>;
 }
 
 export interface CreateLeadInput {
@@ -137,6 +138,7 @@ export interface UpdateLeadInput {
   id: number;
   companyId?: Nullable<number>;
   userId?: Nullable<number>;
+  sortIndex?: Nullable<number>;
   name?: Nullable<string>;
   CPF?: Nullable<string>;
   phone?: Nullable<string>;
@@ -808,6 +810,7 @@ export interface LeadStatus {
   name: string;
   color: string;
   isActive: boolean;
+  sortIndex: number;
 }
 
 export interface FindAllLeadStatusResponse {
@@ -820,6 +823,7 @@ export interface Lead {
   uuid?: Nullable<string>;
   companyId: number;
   userId: number;
+  sortIndex: number;
   name: string;
   CPF?: Nullable<string>;
   phone?: Nullable<string>;

@@ -221,7 +221,7 @@ const ConectionHub = ({
       setQrCode(undefined);
       return;
     }
-    console.log(data.data);
+
     if (data.noInstance || data.data.state === EState.UNLAUNCHED) {
       setConnectionStatus(EConnectionStatus.DISCONNECTED);
       setQrCode(undefined);
@@ -341,6 +341,15 @@ const ConectionHub = ({
     setConnectionStatus(EConnectionStatus.DISCONNECTED);
     toast.success("Desconectado.");
   };
+
+  useEffect(() => {
+    ctx.setData((prev) => {
+      return {
+        ...prev,
+        connectionStatus,
+      };
+    });
+  }, [connectionStatus]);
 
   useEffect(() => {
     if (!session || blockAutoVerify) return;

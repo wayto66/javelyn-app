@@ -85,6 +85,9 @@ export const KanbanLeadBox = ({
         />
         <Tooltip id={`tooltip-lead-${lead.id}`} className="z-[99]" />
       </div>
+      <div className="text-xs">
+        {new Date(lead.createdAt).toLocaleString("pt-BR")}
+      </div>
       <div className="mt-3 flex flex-col gap-2">
         {fieldsToShow.CPF && (
           <div className="flex items-center gap-1 ">

@@ -55,6 +55,7 @@ const contextDefaultValue: TContextData = {
     customFields: {},
     date: true,
   },
+  connectionStatus: EConnectionStatus.UNKNOWN,
 
   showClientEditBox: false,
   showEvaluationEditBox: false,
@@ -100,6 +101,7 @@ import startTooltips from "~/helpers/startTooltips";
 import "~/styles/globals.css";
 import { TContextData } from "~/types/Context";
 import ConfirmationModal from "~/components/modals/ConfirmationModal";
+import { EConnectionStatus } from "~/components/minis/ConectionHub";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
